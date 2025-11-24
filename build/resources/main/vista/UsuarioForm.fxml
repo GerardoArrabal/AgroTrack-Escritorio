@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="controlador.DialogoUsuarioController" spacing="15" prefWidth="480" prefHeight="360" style="-fx-background-color: white;">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20" />
+    </padding>
+    <children>
+        <Label fx:id="lblTitulo" text="Nuevo usuario" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0d4528;" />
+
+        <GridPane hgap="10" vgap="12">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="35" />
+                <ColumnConstraints percentWidth="65" />
+            </columnConstraints>
+            <children>
+                <Label text="Nombre(s):" GridPane.rowIndex="0" />
+                <TextField fx:id="campoNombre" GridPane.rowIndex="0" GridPane.columnIndex="1" promptText="Ej. Ana María" />
+
+                <Label text="Apellidos:" GridPane.rowIndex="1" />
+                <TextField fx:id="campoApellidos" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+
+                <Label text="Correo:" GridPane.rowIndex="2" />
+                <TextField fx:id="campoCorreo" GridPane.rowIndex="2" GridPane.columnIndex="1" promptText="correo@dominio.com" />
+
+                <Label text="Usuario:" GridPane.rowIndex="3" />
+                <TextField fx:id="campoUsername" GridPane.rowIndex="3" GridPane.columnIndex="1" promptText="usuario.agro" />
+
+                <Label text="Contraseña:" GridPane.rowIndex="4" />
+                <PasswordField fx:id="campoPassword" GridPane.rowIndex="4" GridPane.columnIndex="1" promptText="Dejar en blanco para mantener" />
+
+                <Label text="Rol:" GridPane.rowIndex="5" />
+                <ComboBox fx:id="comboRol" GridPane.rowIndex="5" GridPane.columnIndex="1" prefWidth="220" />
+
+                <Label text="Fecha registro:" GridPane.rowIndex="6" />
+                <DatePicker fx:id="pickerFechaRegistro" GridPane.rowIndex="6" GridPane.columnIndex="1" />
+
+                <Label text="Estado:" GridPane.rowIndex="7" />
+                <CheckBox fx:id="checkActivo" text="Cuenta activa" GridPane.rowIndex="7" GridPane.columnIndex="1" />
+            </children>
+        </GridPane>
+
+        <Label fx:id="lblError" textFill="#c62828" visible="false" />
+
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <children>
+                <Button text="Cancelar" onAction="#cancelar" style="-fx-background-color: transparent; -fx-border-color: #0d4528; -fx-text-fill: #0d4528;" />
+                <Button text="Guardar" onAction="#guardar" style="-fx-background-color: #0d4528; -fx-text-fill: white;" />
+            </children>
+        </HBox>
+    </children>
+</VBox>
+

@@ -1,0 +1,154 @@
+<!-- Created with Jaspersoft Studio version 7.0.1.final using JasperReports Library version 7.0.1-573496633c2b4074e32f433154b543003f7d2498  -->
+<jasperReport name="InformeFiltra" language="java" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="13acf49e-4913-4d1b-bccc-113817ad15d1">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DIADAPTER"/>
+	<style name="Title" forecolor="#FFFFFF" fontName="Times New Roman" fontSize="50.0" bold="false"/>
+	<style name="SubTitle" forecolor="#CCCCCC" fontName="Times New Roman" fontSize="18.0" bold="false"/>
+	<style name="Column header" forecolor="#666666" fontName="Times New Roman" fontSize="14.0" bold="true"/>
+	<style name="Detail" mode="Transparent" fontName="Times New Roman"/>
+	<style name="Row" mode="Transparent" fontName="Times New Roman" pdfFontName="Times-Roman">
+		<conditionalStyle mode="Opaque" backcolor="#F0EFEF">
+			<conditionExpression><![CDATA[$V{REPORT_COUNT}%2 == 0]]></conditionExpression>
+		</conditionalStyle>
+	</style>
+	<parameter name="ParametroFincaId" class="java.lang.Integer"/>
+	<dataset name="DatasetGrafica" uuid="49c6f528-27b4-49c9-9fb8-89060ec66b68">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DIADAPTER"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<parameter name="ParametroFincaId" class="java.lang.Integer"/>
+		<query language="sql"><![CDATA[select CUL_ESTADO, count(*) as cantidad from cultivo where CUL_FIN_ID = $P{ParametroFincaId} group by CUL_ESTADO ]]></query>
+		<field name="CUL_ESTADO" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.name" value="CUL_ESTADO"/>
+			<property name="com.jaspersoft.studio.field.label" value="CUL_ESTADO"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="cultivo"/>
+		</field>
+		<field name="cantidad" class="java.lang.Long">
+			<property name="com.jaspersoft.studio.field.name" value="cantidad"/>
+			<property name="com.jaspersoft.studio.field.label" value="cantidad"/>
+		</field>
+	</dataset>
+	<query language="SQL"><![CDATA[SELECT c.CUL_NOMBRE, c.CUL_VARIEDAD, c.CUL_FECHA_SIEMBRA, c.CUL_FECHA_COSECHA, c.CUL_ESTADO, c.CUL_PRODUCCION_KG FROM cultivo c WHERE c.CUL_FIN_ID = $P{ParametroFincaId} ORDER BY c.CUL_FECHA_SIEMBRA DESC]]></query>
+	<field name="CUL_NOMBRE" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="CUL_NOMBRE"/>
+		<property name="com.jaspersoft.studio.field.label" value="CUL_NOMBRE"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="cultivo"/>
+	</field>
+	<field name="CUL_VARIEDAD" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="CUL_VARIEDAD"/>
+		<property name="com.jaspersoft.studio.field.label" value="CUL_VARIEDAD"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="cultivo"/>
+	</field>
+	<field name="CUL_FECHA_SIEMBRA" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.name" value="CUL_FECHA_SIEMBRA"/>
+		<property name="com.jaspersoft.studio.field.label" value="CUL_FECHA_SIEMBRA"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="cultivo"/>
+	</field>
+	<field name="CUL_ESTADO" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="CUL_ESTADO"/>
+		<property name="com.jaspersoft.studio.field.label" value="CUL_ESTADO"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="cultivo"/>
+	</field>
+	<field name="CUL_PRODUCCION_KG" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="CUL_PRODUCCION_KG"/>
+		<property name="com.jaspersoft.studio.field.label" value="CUL_PRODUCCION_KG"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="cultivo"/>
+	</field>
+	<background splitType="Stretch"/>
+	<title height="132" splitType="Stretch">
+		<element kind="frame" uuid="6c6ca4e1-17cd-4913-93d6-5e670ea9ae8a" mode="Opaque" x="0" y="0" width="451" height="95" backcolor="#000000">
+			<element kind="staticText" uuid="a2a2cac8-5a7d-4487-8c54-dab235ce4e21" x="0" y="0" width="370" height="66" bold="false" style="Title">
+				<text><![CDATA[INFORME ]]></text>
+			</element>
+			<element kind="staticText" uuid="8978eac3-c578-41c9-837e-48d2b0184642" x="100" y="66" width="306" height="29" fontSize="22.0" bold="false" style="SubTitle">
+				<text><![CDATA[Informe de Finca]]></text>
+			</element>
+		</element>
+		<element kind="frame" uuid="e3c14156-5b51-4201-918b-97fdc012e5d4" mode="Opaque" x="0" y="100" width="451" height="32" forecolor="#000000" backcolor="#CC0000">
+			<element kind="textField" uuid="5c3301e7-a737-4c59-8a2f-a6c79fd1adb8" x="307" y="12" width="144" height="20" forecolor="#FFFFFF" fontSize="12.0" pattern="EEEEE dd MMMMM yyyy" hTextAlign="Right">
+				<expression><![CDATA[new java.util.Date()]]></expression>
+			</element>
+		</element>
+		<element kind="image" uuid="ac3673a1-258a-46cb-b9a7-01e6370acaf0" x="451" y="0" width="104" height="132" linkType="None" linkTarget="Self">
+			<expression><![CDATA["https://e7.pngegg.com/pngimages/102/941/png-clipart-computer-icons-report-fatality-analysis-reporting-system-angle-text.png"]]></expression>
+		</element>
+	</title>
+	<pageHeader splitType="Stretch"/>
+	<columnHeader height="26" splitType="Stretch">
+		<element kind="staticText" uuid="840b04d2-43a4-4e23-82a6-1585499d2a7d" x="0" y="7" width="110" height="18" forecolor="#000000" bold="false" style="Column header">
+			<text><![CDATA[Cultivo]]></text>
+			<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="8c09e527-7355-41cf-a655-4f5f51571ab0"/>
+		</element>
+		<element kind="staticText" uuid="b30c1502-81ed-4192-9398-e8739fe32d4c" x="110" y="7" width="100" height="18" forecolor="#000000" bold="false" style="Column header">
+			<text><![CDATA[Variedad]]></text>
+			<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="c154d150-99f4-451c-8536-a2143fe5fb2e"/>
+		</element>
+		<element kind="staticText" uuid="e6bcbfe5-a6b5-4406-9dd8-aa6a5e10f0f2" x="210" y="7" width="100" height="18" forecolor="#000000" bold="false" style="Column header">
+			<text><![CDATA[Estado]]></text>
+			<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="6e8c0126-7578-4da9-8667-c4bae46efad5"/>
+		</element>
+		<element kind="staticText" uuid="f1a2b3c4-d5e6-7890-abcd-ef1234567890" x="310" y="7" width="120" height="18" forecolor="#000000" bold="false" style="Column header">
+			<text><![CDATA[Fecha Siembra]]></text>
+		</element>
+		<element kind="staticText" uuid="a2b3c4d5-e6f7-8901-bcde-f12345678901" x="430" y="7" width="125" height="18" forecolor="#000000" bold="false" style="Column header">
+			<text><![CDATA[Producción (kg)]]></text>
+		</element>
+	</columnHeader>
+	<detail>
+		<band height="18" splitType="Stretch">
+			<element kind="frame" uuid="b50221b5-8254-440b-8c6f-1f0b138c9259" mode="Opaque" x="0" y="0" width="555" height="18" style="Row">
+				<element kind="textField" uuid="06b672df-2e90-4521-8c4f-e6aa32727e77" positionType="Float" x="0" y="0" width="110" height="18" fontSize="14.0" textAdjust="StretchHeight" style="Detail">
+					<expression><![CDATA[$F{CUL_NOMBRE}]]></expression>
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="8c09e527-7355-41cf-a655-4f5f51571ab0"/>
+				</element>
+				<element kind="textField" uuid="c586a27b-2cff-4e3d-9733-dc18fcede262" positionType="Float" x="110" y="0" width="100" height="18" fontSize="14.0" textAdjust="StretchHeight" style="Detail">
+					<expression><![CDATA[$F{CUL_VARIEDAD}]]></expression>
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="c154d150-99f4-451c-8536-a2143fe5fb2e"/>
+				</element>
+				<element kind="textField" uuid="e5d528ef-8beb-477e-9da9-5dc95282ffc5" positionType="Float" x="210" y="0" width="100" height="18" fontSize="14.0" textAdjust="StretchHeight" style="Detail">
+					<expression><![CDATA[$F{CUL_ESTADO}]]></expression>
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="6e8c0126-7578-4da9-8667-c4bae46efad5"/>
+				</element>
+				<element kind="textField" uuid="f1a2b3c4-d5e6-7890-abcd-ef1234567890" positionType="Float" x="310" y="0" width="120" height="18" fontSize="14.0" textAdjust="StretchHeight" style="Detail">
+					<expression><![CDATA[$F{CUL_FECHA_SIEMBRA}]]></expression>
+				</element>
+				<element kind="textField" uuid="a2b3c4d5-e6f7-8901-bcde-f12345678901" positionType="Float" x="430" y="0" width="125" height="18" fontSize="14.0" textAdjust="StretchHeight" style="Detail">
+					<expression><![CDATA[$F{CUL_PRODUCCION_KG} != null ? $F{CUL_PRODUCCION_KG} + " kg" : "-"]]></expression>
+				</element>
+			</element>
+		</band>
+	</detail>
+	<columnFooter height="200" splitType="Stretch">
+		<element kind="chart" chartType="pie3D" uuid="df22ccae-7ada-4b38-871f-eab0d039c3f6" x="160" y="0" width="200" height="200" evaluationTime="Report">
+			<dataset kind="pie">
+				<datasetRun uuid="423a158e-70be-43f0-8c3d-a65c59df6134" subDataset="DatasetGrafica">
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<parametersMapExpression><![CDATA[$P{REPORT_PARAMETERS_MAP}]]></parametersMapExpression>
+				</datasetRun>
+				<series>
+					<keyExpression><![CDATA[$F{CUL_ESTADO}]]></keyExpression>
+					<valueExpression><![CDATA[$F{cantidad}]]></valueExpression>
+					<labelExpression><![CDATA[$F{CUL_ESTADO}]]></labelExpression>
+				</series>
+			</dataset>
+			<plot>
+				<itemLabel/>
+			</plot>
+		</element>
+		<property name="com.jaspersoft.studio.unit.height" value="px"/>
+	</columnFooter>
+	<pageFooter height="60" splitType="Stretch">
+		<element kind="frame" uuid="729c3539-f946-4d0e-a0a7-bda2815ea1b0" mode="Opaque" x="0" y="1" width="555" height="24" forecolor="#D0B48E" backcolor="#000000">
+			<element kind="textField" uuid="4834e99c-7f6c-485a-b098-50e5187f2ab4" x="513" y="0" width="40" height="20" forecolor="#FFFFFF" fontSize="10.0" evaluationTime="Report" bold="false" vTextAlign="Middle" style="Column header">
+				<expression><![CDATA[" " + $V{PAGE_NUMBER}]]></expression>
+			</element>
+			<element kind="textField" uuid="9825b46e-76f1-469a-abb8-a1cc27aad685" x="433" y="0" width="80" height="20" forecolor="#FFFFFF" fontSize="10.0" bold="false" hTextAlign="Right" vTextAlign="Middle" style="Column header">
+				<expression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></expression>
+			</element>
+			<element kind="textField" uuid="137d38c7-1a83-4fc5-b156-9d5f1b1a0ddc" x="2" y="1" width="197" height="20" forecolor="#FFFFFF" fontSize="10.0" pattern="EEEEE dd MMMMM yyyy" bold="false" vTextAlign="Middle" style="Column header">
+				<expression><![CDATA[new java.util.Date()]]></expression>
+			</element>
+		</element>
+		<property name="com.jaspersoft.studio.unit.height" value="px"/>
+	</pageFooter>
+	<summary splitType="Stretch"/>
+</jasperReport>

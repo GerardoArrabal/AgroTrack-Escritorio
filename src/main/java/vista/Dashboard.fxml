@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.AreaChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="controlador.ControladorDashboard" prefWidth="1200" prefHeight="720" stylesheets="@../styles/dashboard.css">
+
+    <left>
+        <VBox style="-fx-background-color: #0d4528; -fx-padding: 24; -fx-spacing: 12;" prefWidth="230">
+            <children>
+                <Label text="AgroTrack" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;" />
+                <Label text="Panel de control" style="-fx-text-fill: rgba(255,255,255,0.8);" />
+
+                <ToggleButton text="Dashboard" fx:id="btnNavDashboard" selected="true" style="-fx-background-color: rgba(255,255,255,0.15); -fx-text-fill: white;" maxWidth="Infinity" />
+                <ToggleButton text="Fincas" fx:id="btnNavFincas" style="-fx-text-fill: white;" maxWidth="Infinity" />
+                <ToggleButton text="Cultivos" fx:id="btnNavCultivos" style="-fx-text-fill: white;" maxWidth="Infinity" />
+                <ToggleButton text="Tratamientos" fx:id="btnNavTratamientos" style="-fx-text-fill: white;" maxWidth="Infinity" />
+                <ToggleButton text="Finanzas" fx:id="btnNavFinanzas" style="-fx-text-fill: white;" maxWidth="Infinity" />
+                <ToggleButton text="Reportes" fx:id="btnNavReportes" style="-fx-text-fill: white;" maxWidth="Infinity" />
+                <ToggleButton text="Usuarios" fx:id="btnNavUsuarios" style="-fx-text-fill: white;" maxWidth="Infinity" />
+
+                <VBox alignment="BOTTOM_CENTER" spacing="10" BorderPane.alignment="BOTTOM_CENTER">
+                    <children>
+                        <Label text="Sesión activa" style="-fx-text-fill: rgba(255,255,255,0.6);" />
+                        <Button text="Cerrar sesión" fx:id="btnCerrarSesion" maxWidth="Infinity" style="-fx-background-color: rgba(0,0,0,0.2); -fx-text-fill: white;" onAction="#cerrarSesion" />
+                    </children>
+                </VBox>
+            </children>
+        </VBox>
+    </left>
+
+    <top>
+        <ToolBar style="-fx-background-color: white; -fx-padding: 15 25;">
+            <items>
+                <Label text="Dashboard general" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #103a24;" />
+                <HBox spacing="8">
+                    <children>
+                        <TextField fx:id="campoBuscar" promptText="Buscar finca, cultivo..." prefWidth="240" />
+                        <ComboBox fx:id="comboFiltroPeriodo" promptText="Periodo" prefWidth="140" />
+                    </children>
+                </HBox>
+                <Button text="Nueva finca" fx:id="btnNuevaFinca" style="-fx-background-color: #0d4528; -fx-text-fill: white;" onAction="#crearFinca" />
+                <Button text="Nuevo registro financiero" fx:id="btnNuevoMovimiento" onAction="#crearMovimientoFinanciero" />
+            </items>
+        </ToolBar>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+            <content>
+                <VBox spacing="25" padding="25">
+                    <children>
+                        <GridPane hgap="20" vgap="20">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="25" />
+                                <ColumnConstraints percentWidth="25" />
+                                <ColumnConstraints percentWidth="25" />
+                                <ColumnConstraints percentWidth="25" />
+                            </columnConstraints>
+                            <children>
+                                <VBox style="-fx-background-color: white; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 18; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.06), 10, 0, 0, 4);" GridPane.columnIndex="0">
+                                    <children>
+                                        <Label text="Fincas activas" style="-fx-text-fill: #5f6b6f;" />
+                                        <Label fx:id="lblFincasActivas" text="12" style="-fx-font-size: 32px; -fx-font-weight: bold;" />
+                                        <Label text="+2 nuevas este mes" style="-fx-text-fill: #2e7d32;" />
+                                    </children>
+                                </VBox>
+
+                                <VBox style="-fx-background-color: white; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 18; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.06), 10, 0, 0, 4);" GridPane.columnIndex="1">
+                                    <children>
+                                        <Label text="Superficie total" style="-fx-text-fill: #5f6b6f;" />
+                                        <Label fx:id="lblSuperficieTotal" text="256 ha" style="-fx-font-size: 32px; -fx-font-weight: bold;" />
+                                        <Label text="Última finca registrada: 45 ha" style="-fx-text-fill: #5f6b6f;" />
+                                    </children>
+                                </VBox>
+
+                                <VBox style="-fx-background-color: white; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 18; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.06), 10, 0, 0, 4);" GridPane.columnIndex="2">
+                                    <children>
+                                        <Label text="Balance mensual" style="-fx-text-fill: #5f6b6f;" />
+                                        <Label fx:id="lblBalanceMensual" text="+ 12 500 €" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #2e7d32;" />
+                                        <Label text="Ingresos vs gastos del mes" style="-fx-text-fill: #5f6b6f;" />
+                                    </children>
+                                </VBox>
+
+                                <VBox style="-fx-background-color: white; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 18; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.06), 10, 0, 0, 4);" GridPane.columnIndex="3">
+                                    <children>
+                                        <Label text="Alertas" style="-fx-text-fill: #5f6b6f;" />
+                                        <Label fx:id="lblAlertasAbiertas" text="3" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #c62828;" />
+                                        <Label text="Fumigación pendiente mañana" style="-fx-text-fill: #c62828;" />
+                                    </children>
+                                </VBox>
+                            </children>
+                        </GridPane>
+
+                        <HBox spacing="20">
+                            <children>
+                                <VBox spacing="15" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 18;" HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <Label text="Producción y rendimiento" style="-fx-font-weight: bold;" />
+                                        <AreaChart fx:id="chartProduccion" prefHeight="250">
+                                            <xAxis>
+                                                <CategoryAxis label="Mes" />
+                                            </xAxis>
+                                            <yAxis>
+                                                <NumberAxis label="Toneladas" />
+                                            </yAxis>
+                                        </AreaChart>
+                                    </children>
+                                </VBox>
+
+                                <VBox spacing="15" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 18;" prefWidth="320">
+                                    <children>
+                                        <Label text="Actividades inminentes" style="-fx-font-weight: bold;" />
+                                        <ListView fx:id="listaActividades" prefHeight="250" />
+                                        <Button text="Ver calendario" fx:id="btnVerCalendario" />
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
+
+                        <HBox spacing="20">
+                            <children>
+                                <VBox spacing="10" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 18;" HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <Label text="Últimas gestiones financieras" style="-fx-font-weight: bold;" />
+                                        <TableView fx:id="tablaGestiones" prefHeight="220">
+                                            <columns>
+                                                <TableColumn fx:id="colGestionFecha" text="Fecha" prefWidth="90" />
+                                                <TableColumn fx:id="colGestionTipo" text="Tipo" prefWidth="80" />
+                                                <TableColumn fx:id="colGestionConcepto" text="Concepto" prefWidth="200" />
+                                                <TableColumn fx:id="colGestionMonto" text="Monto" prefWidth="120" />
+                                            </columns>
+                                        </TableView>
+                                        <Button text="Ver todas las gestiones" fx:id="btnVerGestiones" alignment="CENTER_RIGHT" />
+                                    </children>
+                                </VBox>
+
+                                <StackPane style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 18;" prefWidth="320">
+                                    <children>
+                                        <VBox spacing="10" alignment="CENTER">
+                                            <children>
+                                                <Label text="Mapa interactivo" style="-fx-font-weight: bold;" />
+                                                <StackPane fx:id="panelMapa" prefHeight="220" style="-fx-background-color: #eef5ef; -fx-border-color: #c8e6c9; -fx-border-radius: 10;">
+                                                    <children>
+                                                        <ProgressIndicator fx:id="loadingMapa" visible="false" />
+                                                        <Label text="Aquí se cargará el mapa WebView con tus fincas" style="-fx-text-alignment: center; -fx-text-fill: #5f6b6f; -fx-padding: 15;" wrapText="true" />
+                                                    </children>
+                                                </StackPane>
+                                                <Button text="Editar polígonos" fx:id="btnEditarMapa" />
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </StackPane>
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+</BorderPane>
+

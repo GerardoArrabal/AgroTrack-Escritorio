@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="controlador.ControladorDetalleFinca" prefWidth="1100" prefHeight="720">
+
+    <top>
+        <VBox spacing="12" padding="20" style="-fx-background-color: #ffffff; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 10, 0, 0, 5);">
+            <children>
+                <HBox spacing="15" alignment="CENTER_LEFT">
+                    <children>
+                        <Button text="← Volver" fx:id="btnVolver" onAction="#volver" />
+                        <Label fx:id="lblNombreFinca" text="Finca Las Lomas" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #103a24;" />
+                        <Label fx:id="lblEstadoFinca" text="Activa" style="-fx-background-color: #c8e6c9; -fx-padding: 4 12; -fx-background-radius: 12;" />
+                        <Button text="Editar" fx:id="btnEditarFinca" />
+                        <Button text="Generar informe" fx:id="btnGenerarInforme" />
+                    </children>
+                </HBox>
+
+                <GridPane hgap="20" vgap="10">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="25" />
+                        <ColumnConstraints percentWidth="25" />
+                        <ColumnConstraints percentWidth="25" />
+                        <ColumnConstraints percentWidth="25" />
+                    </columnConstraints>
+                    <children>
+                        <VBox spacing="4" GridPane.columnIndex="0">
+                            <children>
+                                <Label text="Superficie total" style="-fx-text-fill: #5f6b6f;" />
+                                <Label fx:id="lblSuperficie" text="58.2 ha" style="-fx-font-size: 20px; -fx-font-weight: bold;" />
+                            </children>
+                        </VBox>
+
+                        <VBox spacing="4" GridPane.columnIndex="1">
+                            <children>
+                                <Label text="Propietario" style="-fx-text-fill: #5f6b6f;" />
+                                <Label fx:id="lblPropietario" text="Ana Gómez" style="-fx-font-size: 20px; -fx-font-weight: bold;" />
+                            </children>
+                        </VBox>
+
+                        <VBox spacing="4" GridPane.columnIndex="2">
+                            <children>
+                                <Label text="Último cultivo registrado" style="-fx-text-fill: #5f6b6f;" />
+                                <Label fx:id="lblUltimoCultivo" text="Maíz Primavera" style="-fx-font-size: 20px; -fx-font-weight: bold;" />
+                            </children>
+                        </VBox>
+
+                        <VBox spacing="4" GridPane.columnIndex="3">
+                            <children>
+                                <Label text="Balance anual" style="-fx-text-fill: #5f6b6f;" />
+                                <Label fx:id="lblBalanceAnual" text="+ 8 450 €" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2e7d32;" />
+                            </children>
+                        </VBox>
+                    </children>
+                </GridPane>
+            </children>
+        </VBox>
+    </top>
+
+    <center>
+        <TabPane fx:id="tabPaneFinca">
+            <tabs>
+                <Tab text="Cultivos" closable="false">
+                    <content>
+                        <SplitPane dividerPositions="0.6">
+                            <items>
+                                <VBox spacing="10" padding="15">
+                                    <children>
+                                        <HBox spacing="10">
+                                            <children>
+                                                <TextField fx:id="campoBuscarCultivos" promptText="Buscar cultivo..." />
+                                                <Button text="Nuevo cultivo" fx:id="btnNuevoCultivo" onAction="#nuevoCultivo" />
+                                            </children>
+                                        </HBox>
+                                        <TableView fx:id="tablaCultivos" VBox.vgrow="ALWAYS">
+                                            <columns>
+                                                <TableColumn fx:id="colCultivoNombre" text="Cultivo" prefWidth="140" />
+                                                <TableColumn fx:id="colCultivoVariedad" text="Variedad" prefWidth="120" />
+                                                <TableColumn fx:id="colCultivoEstado" text="Estado" prefWidth="100" />
+                                                <TableColumn fx:id="colCultivoProduccion" text="Producción (kg)" prefWidth="140" />
+                                            </columns>
+                                        </TableView>
+                                    </children>
+                                </VBox>
+                                <VBox spacing="10" padding="15" style="-fx-background-color: #f5f7f6;">
+                                    <children>
+                                        <Label text="Detalle del cultivo" style="-fx-font-weight: bold;" />
+                                        <GridPane hgap="10" vgap="10">
+                                            <columnConstraints>
+                                                <ColumnConstraints prefWidth="120" />
+                                                <ColumnConstraints prefWidth="200" />
+                                            </columnConstraints>
+                                            <children>
+                                                <Label text="Nombre:" GridPane.rowIndex="0" />
+                                                <Label fx:id="lblCultivoNombre" text="-" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+
+                                                <Label text="Variedad:" GridPane.rowIndex="1" />
+                                                <Label fx:id="lblCultivoVariedad" text="-" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+
+                                                <Label text="Estado:" GridPane.rowIndex="2" />
+                                                <Label fx:id="lblCultivoEstado" text="-" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+
+                                                <Label text="Fecha siembra:" GridPane.rowIndex="3" />
+                                                <Label fx:id="lblCultivoSiembra" text="-" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+
+                                                <Label text="Fecha cosecha:" GridPane.rowIndex="4" />
+                                                <Label fx:id="lblCultivoCosecha" text="-" GridPane.rowIndex="4" GridPane.columnIndex="1" />
+                                            </children>
+                                        </GridPane>
+                                        <TextArea fx:id="areaCultivoNotas" promptText="Observaciones" prefRowCount="5" />
+                                        <Button text="Ver tratamientos" fx:id="btnVerTratamientosCultivo" onAction="#verTratamientosCultivo" />
+                                    </children>
+                                </VBox>
+                            </items>
+                        </SplitPane>
+                    </content>
+                </Tab>
+
+                <Tab text="Tratamientos" closable="false">
+                    <content>
+                        <VBox spacing="10" padding="15">
+                            <children>
+                                <HBox spacing="10">
+                                    <children>
+                                        <TextField fx:id="campoBuscarTratamientos" promptText="Buscar tratamiento..." />
+                                        <Button text="Nuevo tratamiento" fx:id="btnNuevoTratamiento" onAction="#nuevoTratamiento" />
+                                    </children>
+                                </HBox>
+                                <TableView fx:id="tablaTratamientos" VBox.vgrow="ALWAYS">
+                                    <columns>
+                                        <TableColumn fx:id="colTratamientoCultivo" text="Cultivo" prefWidth="140" />
+                                        <TableColumn fx:id="colTratamientoFecha" text="Fecha" prefWidth="110" />
+                                        <TableColumn fx:id="colTratamientoProducto" text="Producto" prefWidth="150" />
+                                        <TableColumn fx:id="colTratamientoTipo" text="Tipo" prefWidth="110" />
+                                        <TableColumn fx:id="colTratamientoCosto" text="Costo" prefWidth="90" />
+                                    </columns>
+                                </TableView>
+                            </children>
+                        </VBox>
+                    </content>
+                </Tab>
+
+                <Tab text="Finanzas" closable="false">
+                    <content>
+                        <VBox spacing="10" padding="15">
+                            <children>
+                                <HBox spacing="10">
+                                    <children>
+                                        <TextField fx:id="campoBuscarFinanzas" promptText="Buscar ingreso/gasto..." />
+                                        <Button text="Registrar movimiento" fx:id="btnNuevaGestion" onAction="#nuevaGestion" />
+                                    </children>
+                                </HBox>
+                                <TableView fx:id="tablaFinanzas" VBox.vgrow="ALWAYS">
+                                    <columns>
+                                        <TableColumn fx:id="colFinanzaFecha" text="Fecha" prefWidth="110" />
+                                        <TableColumn fx:id="colFinanzaTipo" text="Tipo" prefWidth="80" />
+                                        <TableColumn fx:id="colFinanzaConcepto" text="Concepto" prefWidth="200" />
+                                        <TableColumn fx:id="colFinanzaMonto" text="Monto" prefWidth="120" />
+                                    </columns>
+                                </TableView>
+                            </children>
+                        </VBox>
+                    </content>
+                </Tab>
+
+                <Tab text="Documentos y mapa" closable="false">
+                    <content>
+                        <HBox spacing="20" padding="15">
+                            <children>
+                                <VBox spacing="10" prefWidth="320">
+                                    <children>
+                                        <Label text="Documentos" style="-fx-font-weight: bold;" />
+                                        <TableView fx:id="tablaDocumentos" prefHeight="260">
+                                            <columns>
+                                                <TableColumn fx:id="colDocumentoNombre" text="Nombre" prefWidth="200" />
+                                                <TableColumn fx:id="colDocumentoFecha" text="Fecha" prefWidth="110" />
+                                            </columns>
+                                        </TableView>
+                                        <HBox spacing="10">
+                                            <children>
+                                                <Button text="Subir" fx:id="btnSubirDocumento" onAction="#subirDocumento" />
+                                                <Button text="Descargar" fx:id="btnDescargarDocumento" onAction="#descargarDocumento" />
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </VBox>
+
+                                <StackPane style="-fx-background-color: white; -fx-border-color: #c8e6c9; -fx-border-radius: 12;" HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <VBox spacing="10" alignment="CENTER">
+                                            <children>
+                                                <Label text="Mapa de la finca" style="-fx-font-weight: bold;" />
+                                                <StackPane fx:id="panelMapaFinca" prefHeight="320" style="-fx-background-color: #eef5ef; -fx-border-radius: 12;">
+                                                    <children>
+                                                        <ProgressIndicator fx:id="loadingMapaFinca" visible="false" />
+                                                        <Label text="Vista interactiva del polígono cargada vía WebView" wrapText="true" style="-fx-text-alignment: center; -fx-text-fill: #5f6b6f;" />
+                                                    </children>
+                                                </StackPane>
+                                                <Button text="Editar polígono" fx:id="btnEditarPoligono" />
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </StackPane>
+                            </children>
+                        </HBox>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </center>
+</BorderPane>
+

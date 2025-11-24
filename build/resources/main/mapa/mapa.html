@@ -1,0 +1,476 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa AgroTrack</title>
+    <link rel="stylesheet" href="leaflet.css" />
+    <script src="leaflet.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        #map {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Asegurar que solo haya un contenedor Leaflet */
+        .leaflet-container {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        .controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            min-width: 200px;
+        }
+        .controls button {
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+            padding: 8px;
+            background: #0d4528;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .controls button:hover {
+            background: #0a3620;
+        }
+        .controls button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .info {
+            margin: 10px 0;
+            padding: 8px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div class="controls">
+        <div class="info" id="info">Haz clic en el mapa para comenzar a dibujar</div>
+        <button id="btnIniciar">Iniciar dibujo</button>
+        <button id="btnFinalizar" disabled>Finalizar poligono</button>
+        <button id="btnLimpiar" disabled>Limpiar</button>
+        <button id="btnGuardar" disabled>Guardar coordenadas</button>
+    </div>
+
+    <script>
+        let map = null;
+        
+        function inicializarMapa() {
+            console.log('inicializarMapa() llamado');
+            console.log('map existe:', map !== null);
+            console.log('L existe:', typeof L !== 'undefined');
+            
+            // Si el mapa ya existe, solo actualizar tamaño
+            if (map && map.getContainer && map.getContainer()) {
+                console.log('Mapa ya existe, actualizando tamaño...');
+                map.invalidateSize();
+                return;
+            }
+            
+            // Verificar que Leaflet esté cargado
+            if (typeof L === 'undefined') {
+                console.log('Leaflet no está cargado, reintentando...');
+                setTimeout(inicializarMapa, 100);
+                return;
+            }
+            
+            if (typeof L.map === 'undefined') {
+                console.log('L.map no está disponible, reintentando...');
+                setTimeout(inicializarMapa, 100);
+                return;
+            }
+            
+            // Limpiar contenedor si hay algo
+            const mapContainer = document.getElementById('map');
+            console.log('Contenedor del mapa:', mapContainer);
+            
+            if (mapContainer && map) {
+                try {
+                    map.remove();
+                } catch (e) {
+                    console.log('Error al remover mapa anterior:', e);
+                }
+                map = null;
+            }
+            
+            // Límites geográficos de España
+            const spainBounds = [[36.0, -9.5], [44.0, 4.5]];
+            
+            // Crear el mapa
+            try {
+                console.log('Creando mapa Leaflet...');
+                map = L.map('map', {
+                    center: [40.4168, -3.7038],
+                    zoom: 6,
+                    maxBounds: spainBounds,
+                    maxBoundsViscosity: 1.0,
+                    minZoom: 5,
+                    maxZoom: 15
+                });
+                console.log('Mapa creado:', map);
+
+                console.log('Agregando tile layer...');
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: 'OpenStreetMap contributors',
+                    maxZoom: 15
+                }).addTo(map);
+                console.log('Tile layer agregado');
+                
+                setTimeout(function() {
+                    if (map) {
+                        console.log('Invalidando tamaño del mapa...');
+                        map.invalidateSize();
+                    }
+                }, 300);
+                console.log('Mapa inicializado correctamente');
+            } catch (e) {
+                console.error('Error al crear el mapa:', e);
+                console.error('Stack trace:', e.stack);
+            }
+        }
+        
+        // Función para que Java llame
+        window.inicializarMapaDesdeJava = function() {
+            console.log('Llamada desde Java para inicializar mapa');
+            inicializarMapa();
+        };
+        
+        // Inicializar automáticamente después de que Leaflet se cargue
+        function esperarLeaflet() {
+            if (typeof L !== 'undefined' && typeof L.map !== 'undefined') {
+                console.log('Leaflet cargado correctamente, inicializando mapa...');
+                inicializarMapa();
+            } else {
+                console.log('Esperando a que Leaflet se cargue... (L=' + typeof L + ', L.map=' + (typeof L !== 'undefined' ? typeof L.map : 'undefined') + ')');
+                setTimeout(esperarLeaflet, 200);
+            }
+        }
+        
+        // Esperar a que Leaflet se cargue completamente
+        // Si el script se carga de forma asíncrona, usar el evento onload
+        window.addEventListener('load', function() {
+            setTimeout(esperarLeaflet, 200);
+        });
+        
+        // También intentar cuando el DOM esté listo
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(esperarLeaflet, 500);
+            });
+        } else {
+            // Si el documento ya está cargado, esperar más tiempo
+            setTimeout(esperarLeaflet, 800);
+        }
+
+        let dibujando = false;
+        let poligono = null;
+        let puntos = [];
+        let modoInsercion = false;
+        let marcadores = [];
+
+        const btnIniciar = document.getElementById('btnIniciar');
+        const btnFinalizar = document.getElementById('btnFinalizar');
+        const btnLimpiar = document.getElementById('btnLimpiar');
+        const btnGuardar = document.getElementById('btnGuardar');
+        const info = document.getElementById('info');
+
+        function prepararCoordenadas(coordenadas) {
+            if (!coordenadas) {
+                return null;
+            }
+            if (Array.isArray(coordenadas)) {
+                return coordenadas;
+            }
+            if (typeof coordenadas === 'string') {
+                try {
+                    return JSON.parse(coordenadas);
+                } catch (e) {
+                    console.error('Error al parsear coordenadas:', e);
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        function cargarCoordenadas(coordenadasEntrada) {
+            const coord = prepararCoordenadas(coordenadasEntrada);
+            if (coord && Array.isArray(coord) && coord.length > 0) {
+                puntos = coord;
+                dibujarPoligono();
+                redibujarMarcadores();
+                btnLimpiar.disabled = false;
+                btnGuardar.disabled = false;
+                info.textContent = `Poligono cargado: ${puntos.length} puntos`;
+                ajustarMapa();
+            }
+        }
+
+        window.cargarCoordenadasDesdeJava = function(coordenadas) {
+            if (!map) {
+                inicializarMapa();
+                setTimeout(function() {
+                    cargarCoordenadas(coordenadas);
+                }, 200);
+            } else {
+                cargarCoordenadas(coordenadas);
+            }
+        };
+
+        function ajustarMapa() {
+            if (!map) {
+                inicializarMapa();
+                setTimeout(ajustarMapa, 200);
+                return;
+            }
+            setTimeout(() => {
+                if (map) {
+                    map.invalidateSize(true);
+                    if (poligono) {
+                        map.fitBounds(poligono.getBounds());
+                    } else if (puntos.length > 0) {
+                        map.panTo(puntos[0]);
+                    }
+                }
+            }, 100);
+        }
+
+        window.refrescarMapaDesdeJava = function() {
+            if (map) {
+                ajustarMapa();
+            } else {
+                inicializarMapa();
+            }
+        };
+
+        // Inicializar listeners solo una vez (usar window para persistir entre cargas)
+        if (!window.mapListenersInicializados) {
+            btnIniciar.addEventListener('click', function() {
+                if (puntos.length > 0) {
+                    if (!confirm('Deseas limpiar el poligono actual y comenzar uno nuevo?')) {
+                        return;
+                    }
+                    limpiar();
+                }
+                dibujando = true;
+                modoInsercion = false;
+                btnIniciar.disabled = true;
+                btnFinalizar.disabled = false;
+                info.textContent = 'Haz clic en el mapa para anadir puntos al poligono';
+            });
+
+            btnFinalizar.addEventListener('click', function() {
+                if (puntos.length < 3) {
+                    alert('Necesitas al menos 3 puntos para crear un poligono');
+                    return;
+                }
+                dibujando = false;
+                btnIniciar.disabled = false;
+                btnFinalizar.disabled = true;
+                btnGuardar.disabled = false;
+                info.textContent = `Poligono completado: ${puntos.length} puntos`;
+            });
+
+            btnLimpiar.addEventListener('click', function() {
+                if (confirm('Estas seguro de que deseas limpiar el poligono?')) {
+                    limpiar();
+                }
+            });
+
+            btnGuardar.addEventListener('click', function() {
+                if (puntos.length < 3) {
+                    alert('El poligono debe tener al menos 3 puntos');
+                    return;
+                }
+                const coordenadasJson = JSON.stringify(puntos);
+                if (window.javaController && window.javaController.guardarCoordenadasDesdeMapa) {
+                    window.javaController.guardarCoordenadasDesdeMapa(coordenadasJson);
+                    info.textContent = 'Coordenadas guardadas correctamente';
+                } else {
+                    console.log('Coordenadas guardadas:', coordenadasJson);
+                    info.textContent = 'Coordenadas guardadas (consola)';
+                }
+            });
+
+            if (map) {
+                map.on('click', function(e) {
+                    if (!dibujando) return;
+
+                    const lat = e.latlng.lat;
+                    const lng = e.latlng.lng;
+                    const nuevoPunto = [lat, lng];
+
+                    if (modoInsercion && puntos.length >= 3) {
+                        insertarPuntoEnPoligono(nuevoPunto);
+                        info.textContent = `Punto insertado. Total: ${puntos.length}`;
+                    } else {
+                        puntos.push(nuevoPunto);
+                        agregarMarcador(nuevoPunto, puntos.length - 1);
+                        if (puntos.length >= 3) {
+                            dibujarPoligono();
+                        }
+                        info.textContent = `${puntos.length} puntos anadidos`;
+                    }
+                    ajustarMapa();
+                });
+            }
+
+            window.mapListenersInicializados = true;
+        }
+
+        function limpiar() {
+            puntos = [];
+            dibujando = false;
+            modoInsercion = false;
+            if (poligono) {
+                map.removeLayer(poligono);
+                poligono = null;
+            }
+            limpiarMarcadores();
+            btnIniciar.disabled = false;
+            btnFinalizar.disabled = true;
+            btnLimpiar.disabled = true;
+            btnGuardar.disabled = true;
+            info.textContent = 'Haz clic en el mapa para comenzar a dibujar';
+        }
+
+        function limpiarMarcadores() {
+            marcadores.forEach(marker => map.removeLayer(marker));
+            marcadores = [];
+        }
+
+        function agregarMarcador(latlng, idx) {
+            const marker = L.marker(latlng, { draggable: true }).addTo(map)
+                .bindPopup(`Punto ${idx + 1}`);
+            marker.puntoIndex = idx;
+            marker.on('dragend', function(evento) {
+                const posicion = evento.target.getLatLng();
+                if (puntos[marker.puntoIndex]) {
+                    puntos[marker.puntoIndex] = [posicion.lat, posicion.lng];
+                    dibujarPoligono();
+                    redibujarMarcadores();
+                }
+            });
+            marcadores.push(marker);
+        }
+
+        function redibujarMarcadores() {
+            limpiarMarcadores();
+            puntos.forEach((punto, idx) => agregarMarcador(punto, idx));
+        }
+
+        function dibujarPoligono() {
+            if (puntos.length < 3) return;
+
+            if (poligono) {
+                map.removeLayer(poligono);
+            }
+
+            poligono = L.polygon(puntos, {
+                color: '#0d4528',
+                fillColor: '#0d4528',
+                fillOpacity: 0.3,
+                weight: 2
+            }).addTo(map);
+
+            map.fitBounds(poligono.getBounds());
+        }
+
+        function insertarPuntoEnPoligono(nuevo) {
+            const indice = encontrarSegmentoMasCercano(nuevo);
+            puntos.splice(indice + 1, 0, nuevo);
+            dibujarPoligono();
+            redibujarMarcadores();
+        }
+
+        function encontrarSegmentoMasCercano(punto) {
+            let menorDistancia = Infinity;
+            let mejorIndice = 0;
+            for (let i = 0; i < puntos.length; i++) {
+                const a = puntos[i];
+                const b = puntos[(i + 1) % puntos.length];
+                const distancia = distanciaPuntoASegmento(punto, a, b);
+                if (distancia < menorDistancia) {
+                    menorDistancia = distancia;
+                    mejorIndice = i;
+                }
+            }
+            return mejorIndice;
+        }
+
+        function distanciaPuntoASegmento(p, a, b) {
+            const px = p[0], py = p[1];
+            const ax = a[0], ay = a[1];
+            const bx = b[0], by = b[1];
+
+            const dx = bx - ax;
+            const dy = by - ay;
+
+            if (dx === 0 && dy === 0) {
+                return Math.hypot(px - ax, py - ay);
+            }
+
+            let t = ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy);
+            t = Math.max(0, Math.min(1, t));
+            const proyX = ax + t * dx;
+            const proyY = ay + t * dy;
+
+            return Math.hypot(px - proyX, py - proyY);
+        }
+
+        window.mostrarControlesDesdeJava = function() {
+            const panel = document.querySelector('.controls');
+            if (panel) {
+                panel.style.display = 'block';
+            }
+        };
+
+        window.iniciarEdicionDesdeJava = function() {
+            mostrarControlesDesdeJava();
+            if (puntos.length >= 3) {
+                modoInsercion = true;
+                dibujando = true;
+                btnIniciar.disabled = true;
+                btnFinalizar.disabled = false;
+                btnLimpiar.disabled = false;
+                btnGuardar.disabled = false;
+                info.textContent = 'Haz clic sobre el perímetro para insertar nuevos puntos.';
+            } else {
+                if (puntos.length > 0) {
+                    const reiniciar = confirm('Para dibujar un nuevo polígono hay que limpiar el actual. ¿Continuar?');
+                    if (reiniciar) {
+                        limpiar();
+                    } else {
+                        return;
+                    }
+                }
+                dibujando = true;
+                modoInsercion = false;
+                btnIniciar.disabled = true;
+                btnFinalizar.disabled = false;
+                info.textContent = 'Haz clic en el mapa para anadir puntos al poligono.';
+            }
+        };
+    </script>
+</body>
+</html>

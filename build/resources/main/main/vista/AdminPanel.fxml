@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="controlador.ControladorAdmin" prefWidth="1200" prefHeight="720">
+
+    <top>
+        <VBox style="-fx-background-color: #ffffff; -fx-padding: 18;">
+            <children>
+                <HBox alignment="CENTER_LEFT" spacing="14">
+                    <children>
+                        <VBox>
+                            <children>
+                                <Label text="Administración AgroTrack" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #0d4528;" />
+                                <Label text="Usuarios y fincas registradas" style="-fx-text-fill: #5f6b6f;" />
+                            </children>
+                        </VBox>
+                        <Pane HBox.hgrow="ALWAYS" />
+                        <Button text="Informes" fx:id="btnInformes" onAction="#abrirInformes"
+                                style="-fx-background-color: #0d4528; -fx-text-fill: white; -fx-padding: 6 16;" />
+                        <Button text="Cerrar sesión" onAction="#cerrarSesion"
+                                style="-fx-background-color: transparent; -fx-border-color: #0d4528; -fx-text-fill: #0d4528; -fx-padding: 6 16;" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </top>
+
+    <center>
+        <SplitPane dividerPositions="0.48">
+            <items>
+                <VBox spacing="15">
+                    <padding>
+                        <Insets top="20" right="20" bottom="20" left="20" />
+                    </padding>
+                    <children>
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <children>
+                                <Label text="Usuarios" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+                                <TextField fx:id="campoBuscarUsuarios" promptText="Buscar por nombre, correo o usuario" HBox.hgrow="ALWAYS" />
+                                <Button fx:id="btnCrearUsuario" onAction="#crearUsuario">
+                                    <graphic>
+                                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                            <image>
+                                                <Image url="@../../images/añadir.png" />
+                                            </image>
+                                        </ImageView>
+                                    </graphic>
+                                    <text>Crear usuario</text>
+                                </Button>
+                            </children>
+                        </HBox>
+                        <TableView fx:id="tablaUsuarios" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="colUsuarioNombre" text="Nombre" prefWidth="150" />
+                                <TableColumn fx:id="colUsuarioCorreo" text="Correo" prefWidth="200" />
+                                <TableColumn fx:id="colUsuarioUsername" text="Usuario" prefWidth="130" />
+                                <TableColumn fx:id="colUsuarioRol" text="Rol" prefWidth="90" />
+                                <TableColumn fx:id="colUsuarioActivo" text="Activo" prefWidth="80" />
+                            </columns>
+                        </TableView>
+                        <HBox spacing="10" alignment="CENTER_RIGHT">
+                            <children>
+                                <Button fx:id="btnEditarUsuario" onAction="#editarUsuario">
+                                    <graphic>
+                                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                            <image>
+                                                <Image url="@../../images/editar.png" />
+                                            </image>
+                                        </ImageView>
+                                    </graphic>
+                                    <text>Editar</text>
+                                </Button>
+                                <Button text="Desactivar" fx:id="btnDesactivarUsuario" onAction="#desactivarUsuario" />
+                                <Button text="Eliminar usuario" fx:id="btnEliminarUsuario" style="-fx-background-color: #c62828; -fx-text-fill: white;" onAction="#eliminarUsuario" />
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+
+                <VBox spacing="15">
+                    <padding>
+                        <Insets top="20" right="20" bottom="20" left="20" />
+                    </padding>
+                    <children>
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <children>
+                                <Label text="Fincas registradas" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+                                <TextField fx:id="campoBuscarFincas" promptText="Buscar por nombre, propietario o estado" HBox.hgrow="ALWAYS" />
+                                <Button fx:id="btnCrearFinca" onAction="#crearFinca">
+                                    <graphic>
+                                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                            <image>
+                                                <Image url="@../../images/añadir.png" />
+                                            </image>
+                                        </ImageView>
+                                    </graphic>
+                                    <text>Nueva finca</text>
+                                </Button>
+                            </children>
+                        </HBox>
+                        <TableView fx:id="tablaFincas" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="colFincaNombre" text="Finca" prefWidth="150" />
+                                <TableColumn fx:id="colFincaPropietario" text="Propietario" prefWidth="160" />
+                                <TableColumn fx:id="colFincaSuperficie" text="Superficie (ha)" prefWidth="120" />
+                                <TableColumn fx:id="colFincaEstado" text="Estado" prefWidth="100" />
+                                <TableColumn fx:id="colFincaRegistrada" text="Fecha registro" prefWidth="120" />
+                            </columns>
+                        </TableView>
+                        <HBox spacing="10" alignment="CENTER_RIGHT">
+                            <children>
+                                <Button fx:id="btnEditarFinca" onAction="#editarFinca">
+                                    <graphic>
+                                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                            <image>
+                                                <Image url="@../../images/editar.png" />
+                                            </image>
+                                        </ImageView>
+                                    </graphic>
+                                    <text>Editar</text>
+                                </Button>
+                                <Button text="Ver detalle" fx:id="btnVerDetalleFinca" onAction="#verDetalleFinca" />
+                                <Button text="Eliminar finca" fx:id="btnEliminarFinca" style="-fx-background-color: #c62828; -fx-text-fill: white;" onAction="#eliminarFinca" />
+                            </children>
+                        </HBox>
+
+                        <VBox style="-fx-background-color: #f5f7f6; -fx-padding: 12; -fx-background-radius: 8;">
+                            <children>
+                                <Label text="Resumen rápido" style="-fx-font-weight: bold;" />
+                                <Label fx:id="lblTotalUsuarios" text="Total usuarios: 0" />
+                                <Label fx:id="lblTotalFincas" text="Total fincas: 0" />
+                                <Label fx:id="lblFincasActivas" text="Fincas activas: 0" />
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+            </items>
+        </SplitPane>
+    </center>
+</BorderPane>
+

@@ -1,0 +1,161 @@
+<!-- Created with Jaspersoft Studio version 7.0.1.final using JasperReports Library version 7.0.1-573496633c2b4074e32f433154b543003f7d2498  -->
+<jasperReport name="InformeGeneral" language="java" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="13acf49e-4913-4d1b-bccc-113817ad15d1">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DIADAPTER"/>
+	<style name="Title" forecolor="#FFFFFF" fontName="Times New Roman" fontSize="50.0" bold="false"/>
+	<style name="SubTitle" forecolor="#CCCCCC" fontName="Times New Roman" fontSize="18.0" bold="false"/>
+	<style name="Column header" forecolor="#666666" fontName="Times New Roman" fontSize="14.0" bold="true"/>
+	<style name="Detail" mode="Transparent" fontName="Times New Roman"/>
+	<style name="Row" mode="Transparent" fontName="Times New Roman" pdfFontName="Times-Roman">
+		<conditionalStyle mode="Opaque" backcolor="#F0EFEF">
+			<conditionExpression><![CDATA[$V{REPORT_COUNT}%2 == 0]]></conditionExpression>
+		</conditionalStyle>
+	</style>
+	<dataset name="DatasetGrafica" uuid="49c6f528-27b4-49c9-9fb8-89060ec66b68">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DIADAPTER"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<query language="sql"><![CDATA[select USU_ROL, count(*) as cantidad from usuario group by USU_ROL ]]></query>
+		<field name="USU_ROL" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.name" value="USU_ROL"/>
+			<property name="com.jaspersoft.studio.field.label" value="USU_ROL"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="usuario"/>
+		</field>
+		<field name="cantidad" class="java.lang.Long">
+			<property name="com.jaspersoft.studio.field.name" value="cantidad"/>
+			<property name="com.jaspersoft.studio.field.label" value="cantidad"/>
+		</field>
+	</dataset>
+	<query language="SQL"><![CDATA[SELECT USU_ID, USU_NOMBRE, USU_APELLIDOS, USU_EMAIL, USU_USERNAME, USU_ROL, USU_FECHA_REGISTRO, USU_ACTIVO FROM usuario]]></query>
+	<field name="USU_NOMBRE" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="USU_NOMBRE"/>
+		<property name="com.jaspersoft.studio.field.label" value="USU_NOMBRE"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="usuario"/>
+	</field>
+	<field name="USU_APELLIDOS" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="USU_APELLIDOS"/>
+		<property name="com.jaspersoft.studio.field.label" value="USU_APELLIDOS"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="usuario"/>
+	</field>
+	<field name="USU_EMAIL" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="USU_EMAIL"/>
+		<property name="com.jaspersoft.studio.field.label" value="USU_EMAIL"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="usuario"/>
+	</field>
+	<field name="USU_USERNAME" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="USU_USERNAME"/>
+		<property name="com.jaspersoft.studio.field.label" value="USU_USERNAME"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="usuario"/>
+	</field>
+	<field name="USU_ROL" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="USU_ROL"/>
+		<property name="com.jaspersoft.studio.field.label" value="USU_ROL"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="usuario"/>
+	</field>
+	<field name="USU_FECHA_REGISTRO" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.name" value="USU_FECHA_REGISTRO"/>
+		<property name="com.jaspersoft.studio.field.label" value="USU_FECHA_REGISTRO"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="usuario"/>
+	</field>
+	<field name="USU_ACTIVO" class="java.lang.Boolean">
+		<property name="com.jaspersoft.studio.field.name" value="USU_ACTIVO"/>
+		<property name="com.jaspersoft.studio.field.label" value="USU_ACTIVO"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="usuario"/>
+	</field>
+	<background splitType="Stretch"/>
+	<title height="132" splitType="Stretch">
+		<element kind="frame" uuid="6c6ca4e1-17cd-4913-93d6-5e670ea9ae8a" mode="Opaque" x="0" y="0" width="451" height="95" backcolor="#000000">
+			<element kind="staticText" uuid="a2a2cac8-5a7d-4487-8c54-dab235ce4e21" x="0" y="0" width="370" height="66" bold="false" style="Title">
+				<text><![CDATA[INFORME ]]></text>
+			</element>
+			<element kind="staticText" uuid="8978eac3-c578-41c9-837e-48d2b0184642" x="100" y="66" width="306" height="29" fontSize="22.0" bold="false" style="SubTitle">
+				<text><![CDATA[Informe de Usuarios]]></text>
+			</element>
+		</element>
+		<element kind="frame" uuid="e3c14156-5b51-4201-918b-97fdc012e5d4" mode="Opaque" x="0" y="100" width="451" height="32" forecolor="#000000" backcolor="#CC0000">
+			<element kind="textField" uuid="5c3301e7-a737-4c59-8a2f-a6c79fd1adb8" x="307" y="12" width="144" height="20" forecolor="#FFFFFF" fontSize="12.0" pattern="EEEEE dd MMMMM yyyy" hTextAlign="Right">
+				<expression><![CDATA[new java.util.Date()]]></expression>
+			</element>
+		</element>
+		<element kind="image" uuid="ac3673a1-258a-46cb-b9a7-01e6370acaf0" x="451" y="0" width="104" height="132" linkType="None" linkTarget="Self">
+			<expression><![CDATA["https://e7.pngegg.com/pngimages/102/941/png-clipart-computer-icons-report-fatality-analysis-reporting-system-angle-text.png"]]></expression>
+		</element>
+	</title>
+	<pageHeader splitType="Stretch"/>
+	<columnHeader height="26" splitType="Stretch">
+		<element kind="staticText" uuid="aa2bf3bf-9de3-4725-ab21-2aac2a2c6ae6" x="0" y="7" width="110" height="18" forecolor="#000000" bold="false" style="Column header">
+			<text><![CDATA[Nombre]]></text>
+			<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="097ff5ac-0941-4221-9672-ab34d011c0b6"/>
+		</element>
+		<element kind="staticText" uuid="9f5071cf-3121-4653-a36b-30b1065a361e" x="110" y="7" width="110" height="18" forecolor="#000000" bold="false" style="Column header">
+			<text><![CDATA[Apellidos]]></text>
+			<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="babbba77-ead1-458f-a002-30eee6f97be7"/>
+		</element>
+		<element kind="staticText" uuid="64d83b15-5854-4b02-96d6-4b2ffa5a063d" x="220" y="7" width="150" height="18" forecolor="#000000" bold="false" style="Column header">
+			<text><![CDATA[Email]]></text>
+			<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="a693cc08-db5b-491a-809c-1e6cca64c789"/>
+		</element>
+		<element kind="staticText" uuid="a1b2c3d4-e5f6-7890-abcd-ef1234567890" x="370" y="7" width="90" height="18" forecolor="#000000" bold="false" style="Column header">
+			<text><![CDATA[Usuario]]></text>
+		</element>
+		<element kind="staticText" uuid="b2c3d4e5-f6a7-8901-bcde-f12345678901" x="460" y="7" width="95" height="18" forecolor="#000000" bold="false" style="Column header">
+			<text><![CDATA[Rol]]></text>
+		</element>
+	</columnHeader>
+	<detail>
+		<band height="18" splitType="Stretch">
+			<element kind="frame" uuid="b50221b5-8254-440b-8c6f-1f0b138c9259" mode="Opaque" x="0" y="0" width="555" height="18" style="Row">
+				<element kind="textField" uuid="502b8bcc-8895-4ce9-8b78-fc81a363493f" positionType="Float" x="0" y="0" width="110" height="18" fontSize="14.0" textAdjust="StretchHeight" style="Detail">
+					<expression><![CDATA[$F{USU_NOMBRE}]]></expression>
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="097ff5ac-0941-4221-9672-ab34d011c0b6"/>
+				</element>
+				<element kind="textField" uuid="88c85639-ad26-48b5-a0bd-77ea3776abc7" positionType="Float" x="110" y="0" width="110" height="18" fontSize="14.0" textAdjust="StretchHeight" style="Detail">
+					<expression><![CDATA[$F{USU_APELLIDOS}]]></expression>
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="babbba77-ead1-458f-a002-30eee6f97be7"/>
+				</element>
+				<element kind="textField" uuid="9778fee6-3616-4ba4-aa99-e25d50b8f7fb" positionType="Float" x="220" y="0" width="150" height="18" fontSize="14.0" textAdjust="StretchHeight" style="Detail">
+					<expression><![CDATA[$F{USU_EMAIL}]]></expression>
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="a693cc08-db5b-491a-809c-1e6cca64c789"/>
+				</element>
+				<element kind="textField" uuid="a1b2c3d4-e5f6-7890-abcd-ef1234567890" positionType="Float" x="370" y="0" width="90" height="18" fontSize="14.0" textAdjust="StretchHeight" style="Detail">
+					<expression><![CDATA[$F{USU_USERNAME}]]></expression>
+				</element>
+				<element kind="textField" uuid="b2c3d4e5-f6a7-8901-bcde-f12345678901" positionType="Float" x="460" y="0" width="95" height="18" fontSize="14.0" textAdjust="StretchHeight" style="Detail">
+					<expression><![CDATA[$F{USU_ROL}]]></expression>
+				</element>
+			</element>
+		</band>
+	</detail>
+	<columnFooter height="200" splitType="Stretch">
+		<element kind="chart" chartType="pie3D" uuid="df22ccae-7ada-4b38-871f-eab0d039c3f6" x="160" y="0" width="200" height="200" evaluationTime="Report">
+			<dataset kind="pie">
+				<datasetRun uuid="423a158e-70be-43f0-8c3d-a65c59df6134" subDataset="DatasetGrafica">
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				</datasetRun>
+				<series>
+					<keyExpression><![CDATA[$F{USU_ROL}]]></keyExpression>
+					<valueExpression><![CDATA[$F{cantidad}]]></valueExpression>
+					<labelExpression><![CDATA[$F{USU_ROL}]]></labelExpression>
+				</series>
+			</dataset>
+			<plot>
+				<itemLabel/>
+			</plot>
+		</element>
+		<property name="com.jaspersoft.studio.unit.height" value="px"/>
+	</columnFooter>
+	<pageFooter height="60" splitType="Stretch">
+		<element kind="frame" uuid="729c3539-f946-4d0e-a0a7-bda2815ea1b0" mode="Opaque" x="0" y="1" width="555" height="24" forecolor="#D0B48E" backcolor="#000000">
+			<element kind="textField" uuid="4834e99c-7f6c-485a-b098-50e5187f2ab4" x="513" y="0" width="40" height="20" forecolor="#FFFFFF" fontSize="10.0" evaluationTime="Report" bold="false" vTextAlign="Middle" style="Column header">
+				<expression><![CDATA[" " + $V{PAGE_NUMBER}]]></expression>
+			</element>
+			<element kind="textField" uuid="9825b46e-76f1-469a-abb8-a1cc27aad685" x="433" y="0" width="80" height="20" forecolor="#FFFFFF" fontSize="10.0" bold="false" hTextAlign="Right" vTextAlign="Middle" style="Column header">
+				<expression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></expression>
+			</element>
+			<element kind="textField" uuid="137d38c7-1a83-4fc5-b156-9d5f1b1a0ddc" x="2" y="1" width="197" height="20" forecolor="#FFFFFF" fontSize="10.0" pattern="EEEEE dd MMMMM yyyy" bold="false" vTextAlign="Middle" style="Column header">
+				<expression><![CDATA[new java.util.Date()]]></expression>
+			</element>
+		</element>
+		<property name="com.jaspersoft.studio.unit.height" value="px"/>
+	</pageFooter>
+	<summary splitType="Stretch"/>
+</jasperReport>

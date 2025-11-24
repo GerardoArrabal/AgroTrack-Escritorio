@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa AgroTrack</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        #map {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            background-color: #e8f5e9;
+        }
+        #mapCanvas {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+            display: block;
+        }
+        #mapCanvas:active {
+            cursor: grabbing;
+        }
+        .controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            min-width: 200px;
+        }
+        .controls button {
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+            padding: 8px;
+            background: #0d4528;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .controls button:hover {
+            background: #0a3620;
+        }
+        .controls button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .info {
+            margin: 10px 0;
+            padding: 8px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .zoom-controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .zoom-controls button {
+            display: block;
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            margin: 2px;
+            background: white;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .zoom-controls button:hover {
+            background: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <div id="map">
+        <canvas id="mapCanvas"></canvas>
+        <div class="zoom-controls">
+            <button id="btnZoomIn">+</button>
+            <button id="btnZoomOut">-</button>
+        </div>
+        <div class="controls">
+            <div class="info" id="info">Haz clic en el mapa para comenzar a dibujar</div>
+            <button id="btnIniciar">Iniciar dibujo</button>
+            <button id="btnFinalizar" disabled>Finalizar polígono</button>
+            <button id="btnLimpiar" disabled>Limpiar</button>
+            <button id="btnGuardar" disabled>Guardar coordenadas</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('mapCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Configuración del mapa
+        let centerLat = 40.4168; // Madrid
+        let centerLon = -3.7038;
+        let zoom = 6;
+        let dibujando = false;
+        let puntos = [];
+        let poligono = null;
+        let tilesCache = {};
+        let tilesCargando = new Set();
+        const MAX_TILES_SIMULTANEOS = 10; // Limitar tiles cargándose a la vez
+        let tilesPendientes = [];
+        
+        // Límites de España
+        const SPAIN_BOUNDS = {
+            north: 44.0,
+            south: 36.0,
+            east: 4.5,
+            west: -9.5
+        };
+        
+        // Ajustar tamaño del canvas
+        function ajustarCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            dibujarMapa();
+        }
+        
+        // Convertir lat/lon a coordenadas de pantalla (proyección Web Mercator)
+        function latLonToPixel(lat, lon) {
+            const scale = Math.pow(2, zoom);
+            const worldX = (lon + 180) / 360 * 256 * scale;
+            const worldY = (1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * 256 * scale;
+            
+            const centerX = (centerLon + 180) / 360 * 256 * scale;
+            const centerY = (1 - Math.log(Math.tan(centerLat * Math.PI / 180) + 1 / Math.cos(centerLat * Math.PI / 180)) / Math.PI) / 2 * 256 * scale;
+            
+            return {
+                x: canvas.width / 2 + (worldX - centerX),
+                y: canvas.height / 2 + (worldY - centerY)
+            };
+        }
+        
+        // Convertir coordenadas de pantalla a lat/lon
+        function pixelToLatLon(x, y) {
+            const scale = Math.pow(2, zoom);
+            const centerX = (centerLon + 180) / 360 * 256 * scale;
+            const centerY = (1 - Math.log(Math.tan(centerLat * Math.PI / 180) + 1 / Math.cos(centerLat * Math.PI / 180)) / Math.PI) / 2 * 256 * scale;
+            
+            const worldX = centerX + (x - canvas.width / 2);
+            const worldY = centerY + (y - canvas.height / 2);
+            
+            const lon = (worldX / (256 * scale)) * 360 - 180;
+            const lat = Math.atan(Math.sinh(Math.PI * (1 - 2 * worldY / (256 * scale)))) * 180 / Math.PI;
+            
+            return { lat, lon };
+        }
+        
+        // Obtener coordenadas de tile
+        function getTileCoordinates(lat, lon, zoomLevel) {
+            const scale = Math.pow(2, zoomLevel);
+            const worldX = (lon + 180) / 360 * 256 * scale;
+            const worldY = (1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * 256 * scale;
+            return {
+                x: Math.floor(worldX / 256),
+                y: Math.floor(worldY / 256)
+            };
+        }
+        
+        // Cargar tile de OpenStreetMap de forma optimizada
+        function cargarTile(x, y, z) {
+            const key = z + '/' + x + '/' + y;
+            
+            // Si ya está en cache, devolverlo
+            if (tilesCache[key]) {
+                return tilesCache[key];
+            }
+            
+            // Si ya se está cargando, no hacer nada
+            if (tilesCargando.has(key)) {
+                return null;
+            }
+            
+            // Limitar tiles simultáneos
+            if (tilesCargando.size >= MAX_TILES_SIMULTANEOS) {
+                tilesPendientes.push({x: x, y: y, z: z});
+                return null;
+            }
+            
+            // Marcar como cargando
+            tilesCargando.add(key);
+            
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            const url = 'https://tile.openstreetmap.org/' + z + '/' + x + '/' + y + '.png';
+            
+            img.onload = function() {
+                tilesCache[key] = img;
+                tilesCargando.delete(key);
+                // Procesar siguiente tile pendiente
+                procesarTilesPendientes();
+                // Redibujar solo si hay cambios
+                dibujarMapa();
+            };
+            
+            img.onerror = function() {
+                tilesCache[key] = null;
+                tilesCargando.delete(key);
+                procesarTilesPendientes();
+            };
+            
+            img.src = url;
+            return null;
+        }
+        
+        // Procesar tiles pendientes
+        function procesarTilesPendientes() {
+            if (tilesPendientes.length > 0 && tilesCargando.size < MAX_TILES_SIMULTANEOS) {
+                const tile = tilesPendientes.shift();
+                cargarTile(tile.x, tile.y, tile.z);
+            }
+        }
+        
+        // Dibujar el mapa con tiles reales (optimizado)
+        let ultimoDibujo = 0;
+        const THROTTLE_DIBUJO = 100; // Redibujar máximo cada 100ms
+        
+        function dibujarMapa(forzar = false) {
+            const ahora = Date.now();
+            // Si se está arrastrando un marcador, dibujar inmediatamente
+            if (!forzar && !arrastrandoMarcador && ahora - ultimoDibujo < THROTTLE_DIBUJO) {
+                return; // Evitar redibujar demasiado rápido
+            }
+            ultimoDibujo = ahora;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Calcular qué tiles necesitamos (limitar área visible)
+            const topLeft = pixelToLatLon(0, 0);
+            const bottomRight = pixelToLatLon(canvas.width, canvas.height);
+            
+            const topLeftTile = getTileCoordinates(topLeft.lat, topLeft.lon, zoom);
+            const bottomRightTile = getTileCoordinates(bottomRight.lat, bottomRight.lon, zoom);
+            
+            // Limitar tiles a un área razonable
+            const maxTilesX = Math.min(bottomRightTile.x - topLeftTile.x + 3, 15);
+            const maxTilesY = Math.min(bottomRightTile.y - topLeftTile.y + 3, 15);
+            
+            // Limpiar tiles pendientes que ya no son visibles
+            tilesPendientes = tilesPendientes.filter(t => {
+                const key = t.z + '/' + t.x + '/' + t.y;
+                return !tilesCache[key] && tilesCargando.has(key);
+            });
+            
+            // Dibujar tiles visibles
+            for (let x = topLeftTile.x - 1; x <= topLeftTile.x + maxTilesX; x++) {
+                for (let y = topLeftTile.y - 1; y <= topLeftTile.y + maxTilesY; y++) {
+                    const tile = tilesCache[zoom + '/' + x + '/' + y];
+                    if (tile) {
+                        const scale = Math.pow(2, zoom);
+                        const worldX = x * 256;
+                        const worldY = y * 256;
+                        
+                        const centerX = (centerLon + 180) / 360 * 256 * scale;
+                        const centerY = (1 - Math.log(Math.tan(centerLat * Math.PI / 180) + 1 / Math.cos(centerLat * Math.PI / 180)) / Math.PI) / 2 * 256 * scale;
+                        
+                        const pixelX = canvas.width / 2 + (worldX - centerX);
+                        const pixelY = canvas.height / 2 + (worldY - centerY);
+                        
+                        // Solo dibujar si está en el área visible
+                        if (pixelX > -256 && pixelX < canvas.width && pixelY > -256 && pixelY < canvas.height) {
+                            ctx.drawImage(tile, pixelX, pixelY, 256, 256);
+                        }
+                    } else {
+                        // Cargar tile si no está en cache
+                        cargarTile(x, y, zoom);
+                        
+                        // Dibujar placeholder mientras carga
+                        const scale = Math.pow(2, zoom);
+                        const worldX = x * 256;
+                        const worldY = y * 256;
+                        const centerX = (centerLon + 180) / 360 * 256 * scale;
+                        const centerY = (1 - Math.log(Math.tan(centerLat * Math.PI / 180) + 1 / Math.cos(centerLat * Math.PI / 180)) / Math.PI) / 2 * 256 * scale;
+                        const pixelX = canvas.width / 2 + (worldX - centerX);
+                        const pixelY = canvas.height / 2 + (worldY - centerY);
+                        
+                        if (pixelX > -256 && pixelX < canvas.width && pixelY > -256 && pixelY < canvas.height) {
+                            ctx.fillStyle = '#e8f5e9';
+                            ctx.fillRect(pixelX, pixelY, 256, 256);
+                        }
+                    }
+                }
+            }
+            
+            // Dibujar polígono si existe
+            if (poligono && poligono.length > 2) {
+                ctx.fillStyle = 'rgba(13, 69, 40, 0.3)';
+                ctx.strokeStyle = '#0d4528';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                const firstPoint = latLonToPixel(poligono[0].lat, poligono[0].lon);
+                ctx.moveTo(firstPoint.x, firstPoint.y);
+                for (let i = 1; i < poligono.length; i++) {
+                    const point = latLonToPixel(poligono[i].lat, poligono[i].lon);
+                    ctx.lineTo(point.x, point.y);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            }
+            
+            // Dibujar marcadores azules grandes (símbolos de ubicación)
+            puntos.forEach((punto, idx) => {
+                const pixel = latLonToPixel(punto.lat, punto.lon);
+                
+                // Dibujar sombra
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.beginPath();
+                ctx.arc(pixel.x + 2, pixel.y + 2, 15, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Dibujar círculo azul grande
+                ctx.fillStyle = '#2196F3';
+                ctx.beginPath();
+                ctx.arc(pixel.x, pixel.y, 15, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Borde blanco
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Icono de ubicación (triángulo)
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.moveTo(pixel.x, pixel.y - 8);
+                ctx.lineTo(pixel.x - 6, pixel.y + 2);
+                ctx.lineTo(pixel.x + 6, pixel.y + 2);
+                ctx.closePath();
+                ctx.fill();
+            });
+        }
+        
+        // Variables para arrastre del mapa y marcadores
+        let arrastrando = false;
+        let arrastrandoMarcador = false;
+        let marcadorSeleccionado = -1;
+        let ultimoMouseX = 0;
+        let ultimoMouseY = 0;
+        let clickInicialX = 0;
+        let clickInicialY = 0;
+        
+        // Función para detectar si el click está sobre un marcador
+        function obtenerMarcadorEnPosicion(x, y) {
+            for (let i = puntos.length - 1; i >= 0; i--) {
+                const pixel = latLonToPixel(puntos[i].lat, puntos[i].lon);
+                const distancia = Math.sqrt(Math.pow(x - pixel.x, 2) + Math.pow(y - pixel.y, 2));
+                // Aumentar área de detección a 20px para facilitar el arrastre
+                if (distancia <= 20) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+        
+        // Eventos del canvas para arrastrar el mapa y marcadores
+        canvas.addEventListener('mousedown', function(e) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            // Verificar si se clickeó sobre un marcador
+            const marcadorIdx = obtenerMarcadorEnPosicion(mouseX, mouseY);
+            if (marcadorIdx >= 0 && !dibujando) {
+                // Arrastrar marcador
+                e.preventDefault(); // Prevenir comportamiento por defecto
+                arrastrandoMarcador = true;
+                marcadorSeleccionado = marcadorIdx;
+                ultimoMouseX = mouseX;
+                ultimoMouseY = mouseY;
+                clickInicialX = mouseX;
+                clickInicialY = mouseY;
+                canvas.style.cursor = 'move';
+                // Prevenir que se arrastre el mapa
+                arrastrando = false;
+                return;
+            }
+            
+            if (dibujando) {
+                // Si está dibujando, manejar como click normal
+                return;
+            }
+            
+            // Arrastrar mapa
+            arrastrando = true;
+            ultimoMouseX = mouseX;
+            ultimoMouseY = mouseY;
+            clickInicialX = mouseX;
+            clickInicialY = mouseY;
+            canvas.style.cursor = 'grabbing';
+        });
+        
+        canvas.addEventListener('mousemove', function(e) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            if (arrastrandoMarcador && marcadorSeleccionado >= 0) {
+                // Mover marcador
+                e.preventDefault(); // Prevenir comportamiento por defecto
+                const coords = pixelToLatLon(mouseX, mouseY);
+                
+                // Verificar que esté dentro de los límites de España
+                if (coords.lat >= SPAIN_BOUNDS.south && coords.lat <= SPAIN_BOUNDS.north &&
+                    coords.lon >= SPAIN_BOUNDS.west && coords.lon <= SPAIN_BOUNDS.east) {
+                    puntos[marcadorSeleccionado].lat = coords.lat;
+                    puntos[marcadorSeleccionado].lon = coords.lon;
+                    
+                    // Actualizar polígono si existe
+                    if (puntos.length >= 3) {
+                        poligono = puntos.map(p => ({ lat: p.lat, lon: p.lon }));
+                    }
+                    
+                    // Redibujar inmediatamente para feedback visual
+                    dibujarMapa(true); // Forzar dibujado inmediato
+                }
+            } else if (arrastrando && !dibujando) {
+                // Calcular el desplazamiento en coordenadas del mundo
+                const scale = Math.pow(2, zoom);
+                const deltaX = (ultimoMouseX - mouseX) / scale;
+                const deltaY = (ultimoMouseY - mouseY) / scale;
+                
+                // Convertir a grados
+                const deltaLon = (deltaX / 256) * 360;
+                const deltaLat = -(deltaY / 256) * 360;
+                
+                // Actualizar centro del mapa
+                centerLon += deltaLon;
+                centerLat += deltaLat;
+                
+                // Limitar a España
+                centerLat = Math.max(SPAIN_BOUNDS.south, Math.min(SPAIN_BOUNDS.north, centerLat));
+                centerLon = Math.max(SPAIN_BOUNDS.west, Math.min(SPAIN_BOUNDS.east, centerLon));
+                
+                ultimoMouseX = mouseX;
+                ultimoMouseY = mouseY;
+                
+                dibujarMapa();
+            } else if (!dibujando && !arrastrandoMarcador) {
+                // Cambiar cursor si está sobre un marcador
+                const marcadorIdx = obtenerMarcadorEnPosicion(mouseX, mouseY);
+                if (marcadorIdx >= 0) {
+                    canvas.style.cursor = 'move';
+                } else {
+                    canvas.style.cursor = 'grab';
+                }
+            }
+        });
+        
+        canvas.addEventListener('mouseup', function(e) {
+            if (arrastrandoMarcador && marcadorSeleccionado >= 0) {
+                // Finalizar arrastre de marcador
+                e.preventDefault();
+                arrastrandoMarcador = false;
+                marcadorSeleccionado = -1;
+                canvas.style.cursor = dibujando ? 'crosshair' : 'grab';
+                
+                // Guardar automáticamente si hay polígono
+                if (puntos.length >= 3) {
+                    guardarCoordenadas();
+                }
+            } else if (arrastrando && !dibujando) {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                
+                // Si el movimiento fue muy pequeño, tratarlo como click
+                const movimiento = Math.abs(mouseX - clickInicialX) + Math.abs(mouseY - clickInicialY);
+                if (movimiento < 5) {
+                    // Click sin arrastre - no hacer nada si no está dibujando
+                }
+                
+                arrastrando = false;
+                canvas.style.cursor = dibujando ? 'crosshair' : 'grab';
+            }
+        });
+        
+        canvas.addEventListener('mouseleave', function() {
+            arrastrando = false;
+            arrastrandoMarcador = false;
+            marcadorSeleccionado = -1;
+            canvas.style.cursor = dibujando ? 'crosshair' : 'grab';
+        });
+        
+        // Evento de click para dibujar (solo si no se arrastró)
+        canvas.addEventListener('click', function(e) {
+            if (!dibujando) return;
+            if (arrastrando) return; // Si se arrastró, no es un click
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const coords = pixelToLatLon(x, y);
+            
+            // Verificar que esté dentro de los límites de España
+            if (coords.lat < SPAIN_BOUNDS.south || coords.lat > SPAIN_BOUNDS.north ||
+                coords.lon < SPAIN_BOUNDS.west || coords.lon > SPAIN_BOUNDS.east) {
+                alert('Por favor, marca puntos dentro de España');
+                return;
+            }
+            
+            puntos.push({ lat: coords.lat, lon: coords.lon });
+            
+            if (puntos.length >= 3) {
+                poligono = puntos.map(p => ({ lat: p.lat, lon: p.lon }));
+            }
+            
+            dibujarMapa();
+            info.textContent = puntos.length + ' puntos añadidos';
+        });
+        
+        // Controles
+        const btnIniciar = document.getElementById('btnIniciar');
+        const btnFinalizar = document.getElementById('btnFinalizar');
+        const btnLimpiar = document.getElementById('btnLimpiar');
+        const btnGuardar = document.getElementById('btnGuardar');
+        const btnZoomIn = document.getElementById('btnZoomIn');
+        const btnZoomOut = document.getElementById('btnZoomOut');
+        const info = document.getElementById('info');
+        
+        btnIniciar.addEventListener('click', function() {
+            if (puntos.length > 0) {
+                if (!confirm('¿Deseas limpiar el polígono actual y comenzar uno nuevo?')) {
+                    return;
+                }
+                limpiar();
+            }
+            dibujando = true;
+            btnIniciar.disabled = true;
+            btnFinalizar.disabled = false;
+            canvas.style.cursor = 'crosshair';
+            info.textContent = 'Haz clic en el mapa para añadir puntos al polígono';
+        });
+        
+        btnFinalizar.addEventListener('click', function() {
+            if (puntos.length < 3) {
+                alert('Necesitas al menos 3 puntos para crear un polígono');
+                return;
+            }
+            dibujando = false;
+            btnIniciar.disabled = false;
+            btnFinalizar.disabled = true;
+            btnGuardar.disabled = false;
+            canvas.style.cursor = 'grab';
+            info.textContent = 'Polígono completado: ' + puntos.length + ' puntos';
+        });
+        
+        btnLimpiar.addEventListener('click', function() {
+            if (confirm('¿Estás seguro de que deseas limpiar el polígono?')) {
+                limpiar();
+            }
+        });
+        
+        btnGuardar.addEventListener('click', function() {
+            if (puntos.length < 3) {
+                alert('El polígono debe tener al menos 3 puntos');
+                return;
+            }
+            const coordenadasJson = JSON.stringify(puntos.map(p => [p.lat, p.lon]));
+            if (window.javaController && window.javaController.guardarCoordenadasDesdeMapa) {
+                window.javaController.guardarCoordenadasDesdeMapa(coordenadasJson);
+                info.textContent = 'Coordenadas guardadas correctamente';
+            } else {
+                console.log('Coordenadas guardadas:', coordenadasJson);
+                info.textContent = 'Coordenadas guardadas (consola)';
+            }
+        });
+        
+        btnZoomIn.addEventListener('click', function() {
+            if (zoom < 15) {
+                zoom++;
+                // Limpiar solo tiles del zoom anterior
+                const keys = Object.keys(tilesCache);
+                keys.forEach(key => {
+                    if (!key.startsWith(zoom + '/')) {
+                        delete tilesCache[key];
+                    }
+                });
+                tilesCargando.clear();
+                tilesPendientes = [];
+                dibujarMapa();
+            }
+        });
+        
+        btnZoomOut.addEventListener('click', function() {
+            if (zoom > 5) {
+                zoom--;
+                // Limpiar solo tiles del zoom anterior
+                const keys = Object.keys(tilesCache);
+                keys.forEach(key => {
+                    if (!key.startsWith(zoom + '/')) {
+                        delete tilesCache[key];
+                    }
+                });
+                tilesCargando.clear();
+                tilesPendientes = [];
+                dibujarMapa();
+            }
+        });
+        
+        function limpiar() {
+            puntos = [];
+            poligono = null;
+            dibujando = false;
+            btnIniciar.disabled = false;
+            btnFinalizar.disabled = true;
+            btnLimpiar.disabled = true;
+            btnGuardar.disabled = true;
+            canvas.style.cursor = 'grab';
+            info.textContent = 'Haz clic en el mapa para comenzar a dibujar';
+            dibujarMapa();
+        }
+        
+        // Función para ajustar el mapa a las coordenadas de la finca
+        function ajustarMapaAFinca() {
+            if (puntos.length === 0) return;
+            
+            // Calcular bounding box
+            let minLat = puntos[0].lat;
+            let maxLat = puntos[0].lat;
+            let minLon = puntos[0].lon;
+            let maxLon = puntos[0].lon;
+            
+            puntos.forEach(p => {
+                minLat = Math.min(minLat, p.lat);
+                maxLat = Math.max(maxLat, p.lat);
+                minLon = Math.min(minLon, p.lon);
+                maxLon = Math.max(maxLon, p.lon);
+            });
+            
+            // Calcular centro
+            centerLat = (minLat + maxLat) / 2;
+            centerLon = (minLon + maxLon) / 2;
+            
+            // Calcular el tamaño del área en grados
+            const latDiff = maxLat - minLat;
+            const lonDiff = maxLon - minLon;
+            const maxDiff = Math.max(latDiff, lonDiff);
+            
+            // Calcular el zoom necesario para que la finca ocupe aproximadamente el 70% del canvas
+            // Usar una fórmula más precisa basada en el tamaño del canvas
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+            const canvasSize = Math.min(canvasWidth, canvasHeight);
+            
+            // Calcular el zoom necesario
+            // 1 grado ≈ 111 km
+            // Queremos que maxDiff grados ocupen aproximadamente el 70% del canvas
+            const targetSizePixels = canvasSize * 0.7;
+            const metersPerPixel = (maxDiff * 111000) / targetSizePixels;
+            
+            // Calcular zoom basándose en metros por píxel
+            // A zoom 0: ~156543 metros/píxel en el ecuador
+            // Cada nivel de zoom divide por 2
+            let calculatedZoom = Math.log2(156543 / metersPerPixel);
+            
+            // Ajustar para España (latitud ~40)
+            const latRad = centerLat * Math.PI / 180;
+            calculatedZoom += Math.log(Math.cos(latRad)) / Math.log(2);
+            
+            // Redondear y ajustar
+            zoom = Math.round(calculatedZoom);
+            
+            // Asegurar que el zoom esté dentro de los límites razonables
+            // Zoom más alto para ver mejor de cerca
+            if (maxDiff < 0.005) {
+                zoom = Math.max(zoom, 13); // Muy cerca para fincas muy pequeñas
+            } else if (maxDiff < 0.01) {
+                zoom = Math.max(zoom, 12);
+            } else if (maxDiff < 0.02) {
+                zoom = Math.max(zoom, 11);
+            } else if (maxDiff < 0.05) {
+                zoom = Math.max(zoom, 10);
+            } else if (maxDiff < 0.1) {
+                zoom = Math.max(zoom, 9);
+            } else {
+                zoom = Math.max(zoom, 8);
+            }
+            
+            // Límites de zoom
+            zoom = Math.max(8, Math.min(14, zoom));
+            
+            // Asegurar que el centro esté dentro de los límites de España
+            centerLat = Math.max(SPAIN_BOUNDS.south, Math.min(SPAIN_BOUNDS.north, centerLat));
+            centerLon = Math.max(SPAIN_BOUNDS.west, Math.min(SPAIN_BOUNDS.east, centerLon));
+            
+            // Limpiar cache de tiles para el nuevo zoom
+            tilesCargando.clear();
+            tilesPendientes = [];
+            
+            dibujarMapa();
+        }
+        
+        // Funciones para Java
+        window.cargarCoordenadasDesdeJava = function(coordenadas) {
+            try {
+                const coord = typeof coordenadas === 'string' ? JSON.parse(coordenadas) : coordenadas;
+                if (Array.isArray(coord) && coord.length > 0) {
+                    puntos = coord.map(c => ({ lat: c[0], lon: c[1] }));
+                    if (puntos.length >= 3) {
+                        poligono = puntos.map(p => ({ lat: p.lat, lon: p.lon }));
+                    }
+                    
+                    // Ajustar el mapa para mostrar toda la finca
+                    ajustarMapaAFinca();
+                    
+                    btnLimpiar.disabled = false;
+                    btnGuardar.disabled = false;
+                    info.textContent = 'Polígono cargado: ' + puntos.length + ' puntos';
+                }
+            } catch (e) {
+                console.error('Error al cargar coordenadas:', e);
+            }
+        };
+        
+        window.refrescarMapaDesdeJava = function() {
+            ajustarCanvas();
+        };
+        
+        window.inicializarMapaDesdeJava = function() {
+            ajustarCanvas();
+        };
+        
+        // Inicializar
+        ajustarCanvas();
+        window.addEventListener('resize', ajustarCanvas);
+        
+        // Redibujar periódicamente para cargar tiles (con throttling)
+        let ultimoRedibujado = 0;
+        setInterval(function() {
+            const ahora = Date.now();
+            if (ahora - ultimoRedibujado > 1000) { // Redibujar máximo cada segundo
+                ultimoRedibujado = ahora;
+                dibujarMapa();
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

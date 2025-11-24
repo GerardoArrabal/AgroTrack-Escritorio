@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="controlador.DialogoPerfilUsuarioController"
+      spacing="18" prefWidth="520" prefHeight="400"
+      style="-fx-background-color: white;">
+    <padding>
+        <Insets top="24" right="24" bottom="24" left="24"/>
+    </padding>
+    <children>
+        <Label text="Mi perfil" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0d4528;"/>
+        <Label text="Actualiza tus datos personales. Para cambiar la contraseña introduce la actual y la nueva."
+               wrapText="true" style="-fx-text-fill: #5f6b6f;"/>
+
+        <GridPane hgap="14" vgap="14">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="35"/>
+                <ColumnConstraints percentWidth="65"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints/>
+                <RowConstraints/>
+                <RowConstraints/>
+                <RowConstraints/>
+                <RowConstraints/>
+                <RowConstraints/>
+                <RowConstraints/>
+            </rowConstraints>
+
+            <children>
+                <Label text="Nombre" GridPane.rowIndex="0"/>
+                <TextField fx:id="campoNombre" promptText="Tu nombre" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                <Label text="Apellidos" GridPane.rowIndex="1"/>
+                <TextField fx:id="campoApellidos" promptText="Tus apellidos" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                <Label text="Correo" GridPane.rowIndex="2"/>
+                <TextField fx:id="campoEmail" promptText="correo@ejemplo.com" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                <Label text="Usuario" GridPane.rowIndex="3"/>
+                <TextField fx:id="campoUsername" promptText="Nombre de usuario" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+                <Label text="Contraseña actual" GridPane.rowIndex="4"/>
+                <PasswordField fx:id="campoPasswordActual" promptText="Introduce tu contraseña actual"
+                               GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+
+                <Label text="Nueva contraseña" GridPane.rowIndex="5"/>
+                <PasswordField fx:id="campoPasswordNueva" promptText="Opcional"
+                               GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+
+                <Label text="Confirmar nueva" GridPane.rowIndex="6"/>
+                <PasswordField fx:id="campoPasswordConfirmar" promptText="Repite la nueva contraseña"
+                               GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+            </children>
+        </GridPane>
+
+        <Label fx:id="lblMensaje" wrapText="true" visible="false"/>
+
+        <HBox alignment="CENTER_RIGHT" spacing="12">
+            <children>
+                <Button text="Cancelar" onAction="#cancelar"/>
+                <Button text="Guardar cambios" onAction="#guardarCambios"
+                        style="-fx-background-color: #0d4528; -fx-text-fill: white; -fx-padding: 8 18;"/>
+            </children>
+        </HBox>
+    </children>
+</VBox>
+

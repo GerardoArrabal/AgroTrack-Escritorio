@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manual de Usuario - PeliSeries</title>
+  <link rel="icon" type="image/png" href="imagenes/icono.png" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f9f9f9;
+      color: #333;
+    }
+    h1, h2 {
+      color: #2c3e50;
+    }
+    .section {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+    .section img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
+    .highlight {
+      background-color: #e8f4fd;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+    <!-- INICIO DEL MANUAL -->
+    <div class="section">
+        <h1>🎬 Manual de Usuario y Administrador - PeliSeries</h1>
+        <p>Bienvenido al manual de la aplicación de gestión y exploración de películas y series. Esta herramienta está diseñada para permitir a los usuarios buscar contenido audiovisual, valorarlo mediante puntuaciones y comentarios, y para que los administradores puedan gestionar el catálogo de forma eficiente.</p>
+        <p><strong>Objetivo general:</strong> Ofrecer una plataforma sencilla y visual para explorar, valorar y administrar películas y series.</p>
+    </div>
+
+    <!-- ACCESO A LA APLICACIÓN -->
+    <div class="section">
+        <h2>🔐 Acceso a la Aplicación</h2>
+        
+        <h3>➡️ Iniciar Sesión</h3>
+        <p>Al iniciar la aplicación, se muestra una ventana de inicio de sesión donde se deben introducir las credenciales correspondientes al rol.</p>
+        <ul>
+        <li><strong>Administrador:</strong> Se accede introduciendo <span class="highlight">usuario: admin</span> y <span class="highlight">contraseña: admin</span>.</li>
+        <li><strong>Usuario registrado:</strong> Se introducen los datos registrados previamente.</li>
+        </ul>
+        <img src="imagenes/InicioSesion.PNG" alt="Ventana de inicio de sesión" />
+
+        <h3>📝 Registrarse</h3>
+        <p>Si no se dispone de cuenta, se debe hacer click en el botón <strong>Registrarse</strong>, lo que abre una nueva ventana con el formulario correspondiente. Al completar los campos requeridos, se podrá crear una cuenta de usuario.</p>
+        <img src="imagenes/Registro.PNG" alt="Ventana de registro de usuario" />
+    </div>
+
+    <!-- FUNCIONES DEL ADMINISTRADOR -->
+    <div class="section">
+        <h2>🛠️ Funciones del Administrador</h2>
+
+        <p>El rol de administrador permite gestionar el contenido audiovisual almacenado en la base de datos. Entre sus funcionalidades principales se encuentra la capacidad de añadir, modificar o eliminar películas y series, así como gestionar usuarios registrados y consultar informes sobre el catálogo.</p>
+        <img src="imagenes/InicioAdmin.PNG" alt="Inicio vista de Administrador" />
+
+        <h3>➕ Añadir Película o Serie</h3>
+        <p>Al hacer click en el botón <strong>Añadir</strong>, se abre una nueva ventana que contiene un formulario de entrada. En este formulario se deben completar los campos requeridos para que el nuevo contenido se registre correctamente en la base de datos. Una vez guardado, el contenido se visualiza automáticamente en la tabla principal.</p>
+        <img src="imagenes/AñadirPelicula.PNG" alt="Formulario de añadir película o serie" />
+
+        <h3>🗑️ Eliminar Película o Serie</h3>
+        <p>Para eliminar un contenido existente, es necesario seleccionar previamente una película o serie desde la tabla principal. Si se intenta realizar la eliminación sin selección, se mostrará un mensaje de error. Al seleccionar un registro y hacer click en <strong>Eliminar</strong>, el contenido será eliminado de la base de datos y desaparecerá de la vista.</p>
+        <img src="imagenes/EliminarPelicula.PNG" alt="Ejemplo de eliminación de contenido" />
+
+        <h3>🔄 Actualizar Película o Serie</h3>
+        <p>La funcionalidad de actualización requiere seleccionar previamente una película o serie en la tabla. Una vez seleccionada, al hacer click en <strong>Actualizar</strong> se abre una nueva ventana que contiene los datos del contenido elegido. Estos campos pueden ser modificados y, al guardar los cambios, se actualiza automáticamente en la base de datos y en la tabla.</p>
+        <img src="imagenes/ActualizarPelicula.PNG" alt="Ventana de actualización de contenido" />
+
+        <h3>👥 Eliminar Usuario</h3>
+        <p>Esta funcionalidad permite visualizar una tabla con todos los usuarios registrados en el sistema. Para eliminar un usuario, se debe seleccionar un registro y hacer click en el botón <strong>Eliminar Usuario</strong>. La acción se reflejará directamente en la base de datos.</p>
+        <img src="imagenes/EliminarUsuario.PNG" alt="Gestión de usuarios registrados" />
+
+        <h3>📊 Informes</h3>
+        <p>Al hacer click en el botón <strong>Informes</strong>, se abre una nueva ventana con funcionalidades para generar reportes. Se puede optar por generar un informe general del catálogo o un informe detallado de una película o serie específica.</p>
+        <img src="imagenes/InformesAdmin.PNG" alt="Ventana de informes" />
+
+        <h3>🚪 Cierre de Sesión</h3>
+        <p>Al hacer click en el botón <strong>Salir</strong>, se cierra la sesión actual y se redirige al usuario a la pantalla de inicio de sesión. Desde allí se podrá acceder nuevamente con diferentes credenciales, ya sea como usuario o como administrador.</p>
+    </div>
+
+    <!-- FUNCIONES DEL USUARIO -->
+    <div class="section">
+        <h2>🎬 Funciones del Usuario</h2>
+    
+        <p>Desde el perfil de usuario se puede interactuar con el catálogo de películas y series disponibles en la plataforma. Las funcionalidades incluyen marcar contenido como visto, valorar y comentar, editar valoraciones previas, actualizar los propios datos de perfil y generar informes relacionados con las valoraciones.</p>
+        <img src="imagenes/InicioUsuario.PNG" alt="Pantalla de Inicio del Usuario" />
+
+        <h3>👁️ Marcar como Vista</h3>
+        <p>Para poder realizar una valoración, es obligatorio indicar que el contenido ha sido visto. Para ello, se selecciona una película o serie desde la tabla principal y se hace click en el botón <strong>Marcar como Vista</strong>. Al ejecutarse esta acción, se habilita automáticamente la opción de añadir valoración.</p>
+        <img src="imagenes/PeliculaVista.PNG" alt="Botón Marcar como Vista" />
+    
+        <h3>⭐ Añadir Calificación y Comentario</h3>
+        <p>Una vez marcado el contenido como visto, se selecciona el mismo registro y se hace click en el botón <strong>Añadir Calificación y Comentario</strong>. Esto abrirá una nueva ventana donde se puede introducir una valoración numérica y un comentario personal. Al confirmar los datos, estos se almacenan en la base de datos y se reflejan en la tabla principal.</p>
+        <img src="imagenes/AñadirCalificacionComentario.PNG" alt="Ventana para añadir valoración y comentario" />
+    
+        <h3>✏️ Editar Valoración</h3>
+        <p>Si ya existe una valoración registrada, esta puede modificarse. Se selecciona la película o serie correspondiente y se hace click en el botón <strong>Editar Valoración</strong>. Se abre una ventana que contiene los datos previamente ingresados. Estos pueden modificarse y, tras confirmar los cambios, se actualizan en la base de datos y en la vista general.</p>
+        <img src="imagenes/EditarCalificacionComentario.PNG" alt="Ventana para editar valoración" />
+    
+        <h3>🧑‍💻 Editar Datos del Usuario</h3>
+        <p>La aplicación permite modificar los datos del perfil de usuario activo. Al hacer click en <strong>Editar Datos Usuario</strong>, se abre una nueva ventana con la información actual del usuario. Los campos pueden actualizarse libremente y, al guardarse, se reflejan en la base de datos.</p>
+        <img src="imagenes/EditarDatosUsuario.PNG" alt="Formulario para editar datos del usuario" />
+    
+        <h3>📈 Generar Informes</h3>
+        <p>Desde el rol de usuario también es posible consultar informes generales sobre las valoraciones registradas. Para ello, se hace click en el botón <strong>Informes</strong>, lo que abre una nueva ventana. Al hacer click en <strong>Generar Informe</strong>, se visualiza un documento que contiene todas las calificaciones y comentarios realizados por todos los usuarios registrados.</p>
+        <img src="imagenes/InformesUsuario.PNG" alt="Ventana de informe desde vista usuario" />
+
+        <h3>🚪 Cierre de Sesión</h3>
+        <p>Al hacer click en el botón <strong>Salir</strong>, se cierra la sesión actual y se redirige al usuario a la pantalla de inicio de sesión. Desde allí se podrá acceder nuevamente con diferentes credenciales, ya sea como usuario o como administrador.</p>
+    </div>
+    
+      <!-- CONTACTO Y SOPORTE -->
+    <div class="section">
+        <h2>📬 Contacto y Soporte</h2>
+
+        <p>Ante cualquier incidencia técnica, error en la aplicación o duda sobre su funcionamiento, se recomienda contactar directamente con el desarrollador responsable del proyecto.</p>
+
+        <p>👤 <strong>Desarrollador:</strong> Gerardo Arrabal</p>
+        <p>📧 <strong>Email:</strong> <a href="mailto:gerardo@apppeliseries.com">gerardo@peliseries.com</a></p>
+        <p>⏰ <strong>Horario de atención:</strong> De lunes a viernes, de 9:00 a 18:00</p>
+        <p>🛠️ Se recomienda incluir una descripción clara del problema y, si es posible, capturas de pantalla para facilitar el diagnóstico y la resolución.</p>
+    </div>
+
+</body>
+</html>

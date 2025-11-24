@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="controlador.DialogoCultivoController"
+      spacing="15" prefWidth="480" prefHeight="420" style="-fx-background-color: white;">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20" />
+    </padding>
+    <children>
+        <Label fx:id="lblTitulo" text="Nuevo cultivo"
+               style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0d4528;" />
+
+        <GridPane hgap="12" vgap="12">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="35" />
+                <ColumnConstraints percentWidth="65" />
+            </columnConstraints>
+            <children>
+                <Label text="Nombre:" GridPane.rowIndex="0" />
+                <TextField fx:id="campoNombre" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+
+                <Label text="Variedad:" GridPane.rowIndex="1" />
+                <TextField fx:id="campoVariedad" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+
+                <Label text="Estado:" GridPane.rowIndex="2" />
+                <ComboBox fx:id="comboEstado" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+
+                <Label text="Fecha siembra:" GridPane.rowIndex="3" />
+                <DatePicker fx:id="pickerSiembra" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+
+                <Label text="Fecha cosecha:" GridPane.rowIndex="4" />
+                <DatePicker fx:id="pickerCosecha" GridPane.rowIndex="4" GridPane.columnIndex="1" />
+
+                <Label text="Producción (kg):" GridPane.rowIndex="5" />
+                <TextField fx:id="campoProduccion" promptText="Ej. 1200" GridPane.rowIndex="5" GridPane.columnIndex="1" />
+
+                <Label text="Rend. estimado (kg):" GridPane.rowIndex="6" />
+                <TextField fx:id="campoRendEstimado" GridPane.rowIndex="6" GridPane.columnIndex="1" />
+
+                <Label text="Rend. real (kg):" GridPane.rowIndex="7" />
+                <TextField fx:id="campoRendReal" GridPane.rowIndex="7" GridPane.columnIndex="1" />
+            </children>
+        </GridPane>
+
+        <Label fx:id="lblError" textFill="#c62828" visible="false" />
+
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <children>
+                <Button onAction="#cancelar" style="-fx-background-color: transparent; -fx-border-color: #0d4528; -fx-text-fill: #0d4528;">
+                    <graphic>
+                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../../images/flecha-atras.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                    <text>Cancelar</text>
+                </Button>
+                <Button onAction="#guardar" style="-fx-background-color: #0d4528; -fx-text-fill: white;">
+                    <graphic>
+                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../../images/guardar.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                    <text>Guardar</text>
+                </Button>
+            </children>
+        </HBox>
+    </children>
+</VBox>
+
+
