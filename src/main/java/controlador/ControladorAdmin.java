@@ -149,11 +149,6 @@ public class ControladorAdmin {
         } catch (SQLException e) {
             String mensaje = esErrorDeConexion(e)
                 ? "No se puede conectar a la base de datos MySQL.\n\n" +
-                  "Verifica que:\n" +
-                  "• Docker Desktop esté ejecutándose\n" +
-                  "• El contenedor MySQL esté corriendo\n" +
-                  "• El puerto 3309 esté disponible\n" +
-                  "• Las credenciales en bbdd.properties sean correctas\n\n" +
                   "Detalle técnico: " + e.getMessage()
                 : "No se pudieron obtener las fincas.\nDetalle: " + e.getMessage();
             
@@ -327,7 +322,6 @@ public class ControladorAdmin {
             Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
             stage.getIcons().add(new javafx.scene.image.Image(getClass().getResourceAsStream("/images/icono.png")));
         } catch (Exception e) {
-            // Si no se puede cargar el icono, continuar sin él
         }
         alert.showAndWait();
     }
@@ -448,11 +442,10 @@ public class ControladorAdmin {
         stage.initModality(Modality.WINDOW_MODAL);
         stage.setScene(new Scene(root));
         stage.setResizable(false);
-        // Configurar icono
+        
         try {
             stage.getIcons().add(new javafx.scene.image.Image(getClass().getResourceAsStream("/images/icono.png")));
         } catch (Exception e) {
-            // Si no se puede cargar el icono, continuar sin él
         }
         return stage;
     }
