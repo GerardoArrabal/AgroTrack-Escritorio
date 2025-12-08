@@ -141,10 +141,28 @@ public class ControladorInformesUsuario implements Initializable {
         lanzarInforme(rutaInforme, parametros, true);
     }
 
+    /**
+     * GENERACIÓN DE INFORMES CON JASPERREPORTS
+     * 
+     * Este método genera informes usando la librería JasperReports, que permite:
+     * 1. Diseñar informes visualmente (archivos .jrxml)
+     * 2. Llenar el informe con datos de la base de datos
+     * 3. Exportar a HTML (para mostrar en pantalla) o PDF (para descargar)
+     * 
+     * Proceso:
+     * 1. Carga el archivo .jrxml (plantilla del informe)
+     * 2. Lo compila (JasperCompileManager)
+     * 3. Lo llena con datos de la BD usando parámetros (JasperFillManager)
+     * 4. Lo exporta a HTML o PDF (JasperExportManager)
+     * 
+     * @param rutaInf Ruta del archivo .jrxml en src/main/resources/reports/
+     * @param param Parámetros para el informe (ej: ID de finca)
+     * @param incrustado Si true, muestra en el WebView; si false, abre nueva ventana
+     */
     @FXML
     private void lanzarInforme(String rutaInf, Map<String, Object> param, boolean incrustado) {
         try {
-            // Intentar diferentes rutas posibles
+            // Intentar diferentes rutas posibles (por si hay problemas con el classpath)
             InputStream reportStream = getClass().getResourceAsStream(rutaInf);
             if (reportStream == null) {
                 // Intentar sin el slash inicial
@@ -152,7 +170,7 @@ public class ControladorInformesUsuario implements Initializable {
                 reportStream = getClass().getResourceAsStream(rutaAlternativa);
             }
             if (reportStream == null) {
-                // Intentar desde el classloader
+                // Intentar desde el classloader directamente
                 reportStream = getClass().getClassLoader().getResourceAsStream(rutaInf.startsWith("/") ? rutaInf.substring(1) : rutaInf);
             }
             if (reportStream == null) {
@@ -160,20 +178,31 @@ public class ControladorInformesUsuario implements Initializable {
                 return;
             }
 
+            // PASO 1: Compilar el archivo .jrxml (convertirlo a formato binario)
             JasperReport report = JasperCompileManager.compileReport(reportStream);
+            
+            // PASO 2: Llenar el informe con datos de la base de datos
+            // - report: La plantilla compilada
+            // - param: Parámetros (ej: {"ParametroFincaId": 5})
+            // - conexion: Conexión a MySQL para ejecutar las consultas SQL del informe
             JasperPrint jasperPrint = JasperFillManager.fillReport(report, param, conexion);
-            jasperPrintActual = jasperPrint; // Guardar para exportar a PDF
+            jasperPrintActual = jasperPrint; // Guardar para poder exportar a PDF después
 
+            // PASO 3: Exportar el informe a HTML
             if (!jasperPrint.getPages().isEmpty()) {
                 String outputHtmlFile = "informeFinca.html";
+                // Exporta el informe a un archivo HTML temporal
                 JasperExportManager.exportReportToHtmlFile(jasperPrint, outputHtmlFile);
 
                 if (incrustado) {
+                    // Mostrar el informe en el WebView de la misma ventana
                     if (panelVacio != null) {
                         panelVacio.setVisible(false);
                     }
+                    // Cargar el HTML generado en el WebView
                     webView.getEngine().load(new File(outputHtmlFile).toURI().toString());
                 } else {
+                    // Abrir el informe en una nueva ventana
                     mostrarInformeEnNuevaVentana(outputHtmlFile, "Informe de Finca");
                 }
             } else {
@@ -211,6 +240,18 @@ public class ControladorInformesUsuario implements Initializable {
         stage.showAndWait();
     }
 
+    /**
+     * EXPORTACIÓN DEL INFORME A PDF
+     * 
+     * Permite al usuario descargar el informe generado como archivo PDF.
+     * Usa el mismo JasperPrint que se generó al crear el informe en pantalla,
+     * así que no necesita volver a consultar la base de datos.
+     * 
+     * Proceso:
+     * 1. Verifica que haya un informe generado (jasperPrintActual)
+     * 2. Abre un diálogo para que el usuario elija dónde guardar el PDF
+     * 3. Exporta el informe a PDF usando JasperExportManager
+     */
     @FXML
     private void descargarPDF(ActionEvent event) {
         if (jasperPrintActual == null) {
@@ -218,10 +259,12 @@ public class ControladorInformesUsuario implements Initializable {
             return;
         }
 
+        // Abrir diálogo para elegir dónde guardar el PDF
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Guardar informe como PDF");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos PDF", "*.pdf"));
         
+        // Generar nombre de archivo sugerido basado en el nombre de la finca
         Finca fincaSeleccionada = comboFincas.getValue();
         String nombreArchivo = fincaSeleccionada != null 
             ? "Informe_Finca_" + fincaSeleccionada.getNombre().replaceAll("[^a-zA-Z0-9]", "_") + ".pdf"
@@ -233,6 +276,7 @@ public class ControladorInformesUsuario implements Initializable {
 
         if (archivo != null) {
             try {
+                // Exportar el informe a PDF (mismo proceso que HTML, pero formato diferente)
                 JasperExportManager.exportReportToPdfFile(jasperPrintActual, archivo.getAbsolutePath());
                 mostrarAlerta("Éxito", "El informe se ha descargado correctamente en:\n" + archivo.getAbsolutePath(), Alert.AlertType.INFORMATION);
             } catch (JRException e) {

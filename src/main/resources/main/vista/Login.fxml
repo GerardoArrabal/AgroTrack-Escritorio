@@ -10,13 +10,20 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
 
 <StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="controlador.ControladorLogin" style="-fx-background-color: linear-gradient(to bottom, #0d4528, #0b2a1d);" prefWidth="500" prefHeight="420">
     <children>
         <VBox spacing="18" alignment="CENTER" style="-fx-background-color: #ffffff; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 20, 0, 0, 8);" maxWidth="400">
             <children>
-                <VBox alignment="CENTER">
+                <VBox alignment="CENTER" spacing="10">
                     <children>
+                        <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../../images/icono.png" />
+                            </image>
+                        </ImageView>
                         <Label text="AgroTrack" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #0d4528;" />
                         <Label text="Gestión integral de fincas agrícolas" style="-fx-text-fill: #5f6b6f;" />
                     </children>

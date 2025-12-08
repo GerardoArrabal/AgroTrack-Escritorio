@@ -20,8 +20,13 @@
                 <Insets top="30" right="30" bottom="30" left="30" />
             </padding>
             <children>
-                <VBox alignment="CENTER">
+                <VBox alignment="CENTER" spacing="10">
                     <children>
+                        <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../../images/icono.png" />
+                            </image>
+                        </ImageView>
                         <Label text="Crear cuenta AgroTrack" style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #0d4528;" />
                         <Label text="Introduce tus datos para acceder a la plataforma" style="-fx-text-fill: #5f6b6f;" />
                     </children>

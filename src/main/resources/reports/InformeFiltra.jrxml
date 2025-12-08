@@ -55,7 +55,7 @@
 	</field>
 	<background splitType="Stretch"/>
 	<title height="132" splitType="Stretch">
-		<element kind="frame" uuid="6c6ca4e1-17cd-4913-93d6-5e670ea9ae8a" mode="Opaque" x="0" y="0" width="451" height="95" backcolor="#000000">
+		<element kind="frame" uuid="6c6ca4e1-17cd-4913-93d6-5e670ea9ae8a" mode="Opaque" x="0" y="0" width="451" height="95" backcolor="#0d4528">
 			<element kind="staticText" uuid="a2a2cac8-5a7d-4487-8c54-dab235ce4e21" x="0" y="0" width="370" height="66" bold="false" style="Title">
 				<text><![CDATA[INFORME ]]></text>
 			</element>
@@ -63,13 +63,13 @@
 				<text><![CDATA[Informe de Finca]]></text>
 			</element>
 		</element>
-		<element kind="frame" uuid="e3c14156-5b51-4201-918b-97fdc012e5d4" mode="Opaque" x="0" y="100" width="451" height="32" forecolor="#000000" backcolor="#CC0000">
+		<element kind="frame" uuid="e3c14156-5b51-4201-918b-97fdc012e5d4" mode="Opaque" x="0" y="100" width="451" height="32" forecolor="#000000" backcolor="#0d4528">
 			<element kind="textField" uuid="5c3301e7-a737-4c59-8a2f-a6c79fd1adb8" x="307" y="12" width="144" height="20" forecolor="#FFFFFF" fontSize="12.0" pattern="EEEEE dd MMMMM yyyy" hTextAlign="Right">
 				<expression><![CDATA[new java.util.Date()]]></expression>
 			</element>
 		</element>
 		<element kind="image" uuid="ac3673a1-258a-46cb-b9a7-01e6370acaf0" x="451" y="0" width="104" height="132" linkType="None" linkTarget="Self">
-			<expression><![CDATA["https://e7.pngegg.com/pngimages/102/941/png-clipart-computer-icons-report-fatality-analysis-reporting-system-angle-text.png"]]></expression>
+			<expression><![CDATA[net.sf.jasperreports.engine.util.JRLoader.getResourceInputStream("images/icono.png")]]></expression>
 		</element>
 	</title>
 	<pageHeader splitType="Stretch"/>
@@ -137,7 +137,7 @@
 		<property name="com.jaspersoft.studio.unit.height" value="px"/>
 	</columnFooter>
 	<pageFooter height="60" splitType="Stretch">
-		<element kind="frame" uuid="729c3539-f946-4d0e-a0a7-bda2815ea1b0" mode="Opaque" x="0" y="1" width="555" height="24" forecolor="#D0B48E" backcolor="#000000">
+		<element kind="frame" uuid="729c3539-f946-4d0e-a0a7-bda2815ea1b0" mode="Opaque" x="0" y="1" width="555" height="24" forecolor="#D0B48E" backcolor="#0d4528">
 			<element kind="textField" uuid="4834e99c-7f6c-485a-b098-50e5187f2ab4" x="513" y="0" width="40" height="20" forecolor="#FFFFFF" fontSize="10.0" evaluationTime="Report" bold="false" vTextAlign="Middle" style="Column header">
 				<expression><![CDATA[" " + $V{PAGE_NUMBER}]]></expression>
 			</element>

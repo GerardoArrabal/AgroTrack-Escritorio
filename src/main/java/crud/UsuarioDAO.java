@@ -19,7 +19,24 @@ public class UsuarioDAO {
         "SELECT USU_ID, USU_NOMBRE, USU_APELLIDOS, USU_EMAIL, USU_USERNAME, USU_PASSWORD, USU_ROL, "
             + "USU_FECHA_REGISTRO, USU_ACTIVO FROM usuario ";
 
+    /**
+     * AUTENTICACIÓN DE USUARIOS
+     * 
+     * Verifica las credenciales del usuario y permite el acceso al sistema.
+     * 
+     * Características:
+     * - Permite login con username O email (flexibilidad para el usuario)
+     * - Verifica contraseña usando BCrypt (seguro)
+     * - Migración automática: Si encuentra una contraseña antigua en texto plano,
+     *   la convierte a BCrypt automáticamente (compatibilidad hacia atrás)
+     * 
+     * @param usuarioOCorreo Puede ser el username o el email del usuario
+     * @param password Contraseña en texto plano (se compara con el hash guardado)
+     * @return Optional con el usuario si las credenciales son correctas, vacío si no
+     * @throws SQLException Si hay error de conexión a la base de datos
+     */
     public Optional<Usuario> autenticar(String usuarioOCorreo, String password) throws SQLException {
+        // Buscar usuario por username O email (el ? se usa dos veces para ambos casos)
         String sql = SELECT_BASE
             + "WHERE (USU_USERNAME = ? OR USU_EMAIL = ?) AND USU_ACTIVO = TRUE";
         try (Connection conn = ConexionBD.obtenerConexion();
@@ -29,18 +46,24 @@ public class UsuarioDAO {
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 Usuario usuario = mapear(rs);
+                
+                // INTENTO 1: Verificar con BCrypt (método seguro y actual)
                 if (SeguridadUtil.verificarPassword(password, usuario.getPassword())) {
                     return Optional.of(usuario);
                 }
-                // Compatibilidad con contraseñas antiguas en texto plano
+                
+                // INTENTO 2: Compatibilidad con contraseñas antiguas en texto plano
+                // Si la app tenía usuarios con contraseñas sin hashear, los migra automáticamente
+                // Esto solo funciona si la contraseña guardada NO es un hash BCrypt válido
                 if (password.equals(usuario.getPassword())) {
+                    // Convertir la contraseña antigua a BCrypt y guardarla
                     String nuevoHash = SeguridadUtil.hashPassword(password);
                     actualizarPassword(usuario.getId(), nuevoHash);
                     usuario.setPassword(nuevoHash);
                     return Optional.of(usuario);
                 }
             }
-            return Optional.empty();
+            return Optional.empty();  // Credenciales incorrectas
         }
     }
 

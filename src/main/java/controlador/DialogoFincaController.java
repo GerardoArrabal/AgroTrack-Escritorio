@@ -77,12 +77,29 @@ public class DialogoFincaController {
         inicializarMapa();
     }
 
+    /**
+     * INICIALIZACIÓN DEL MAPA INTERACTIVO
+     * 
+     * Este método carga el archivo HTML del mapa (mapa.html) en un WebView de JavaFX
+     * y establece la comunicación bidireccional entre Java y JavaScript.
+     * 
+     * ¿Cómo funciona la comunicación?
+     * 1. Java carga el HTML en el WebView
+     * 2. Java expone este controlador a JavaScript: window.javaController = this
+     * 3. JavaScript puede llamar métodos Java: window.javaController.guardarCoordenadasDesdeMapa()
+     * 4. Java puede llamar funciones JavaScript: webEngine.executeScript("inicializarMapa()")
+     * 
+     * IMPORTANTE: Hay mucha lógica de "espera" porque:
+     * - El HTML se carga de forma asíncrona
+     * - Leaflet.js dentro del HTML también se carga de forma asíncrona
+     * - Si intentas usar el mapa antes de que esté listo, falla
+     */
     private void inicializarMapa() {
         if (webViewMapa == null) {
             return;
         }
         
-        // Si ya se cargó el mapa, no hacer nada
+        // Si ya se cargó el mapa, no hacer nada (evitar cargar múltiples veces)
         if (webEngine != null && webEngine.getLoadWorker().getState() == Worker.State.SUCCEEDED) {
             return;
         }
@@ -95,17 +112,22 @@ public class DialogoFincaController {
             loadingMapa.setVisible(false);
         }
 
-        // Agregar listener solo una vez
+        // Agregar listener solo una vez (evitar múltiples listeners)
         if (!listenerAñadido) {
+            // Escuchar cuando el HTML termine de cargar
             webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue == Worker.State.SUCCEEDED) {
                     mapaListo = true;
                     mostrarIndicadorCarga(false);
                     try {
+                        // PASO CRÍTICO: Exponer este controlador Java a JavaScript
+                        // Ahora JavaScript puede llamar: window.javaController.guardarCoordenadasDesdeMapa()
                         JSObject window = (JSObject) webEngine.executeScript("window");
                         window.setMember("javaController", this);
                         
-                        // Usar setTimeout en JavaScript para dar tiempo a que Leaflet se cargue
+                        // Llamar a JavaScript para inicializar el mapa
+                        // Usamos setTimeout porque Leaflet.js puede tardar en cargar
+                        // Este código JavaScript se ejecuta dentro del WebView
                         webEngine.executeScript(
                             "setTimeout(function() { " +
                             "  console.log('Verificando Leaflet...'); " +
@@ -123,8 +145,10 @@ public class DialogoFincaController {
                             "}, 500);"
                         );
                         
+                        // Si estamos editando una finca existente, cargar sus coordenadas en el mapa
                         if (!coordenadasPoligono.isBlank()) {
-                            // Cargar coordenadas después de que el mapa se inicialice
+                            // Esperar más tiempo (1500ms) para asegurar que el mapa esté completamente listo
+                            // IMPORTANTE: Escapamos las comillas y barras para evitar errores en JavaScript
                             webEngine.executeScript(
                                 "setTimeout(function() { " +
                                 "  if (typeof cargarCoordenadasDesdeJava === 'function') { " +
@@ -201,6 +225,18 @@ public class DialogoFincaController {
         }
     }
 
+    /**
+     * MÉTODO LLAMADO DESDE JAVASCRIPT
+     * 
+     * Este método es llamado desde el mapa HTML cuando el usuario hace clic en
+     * "Guardar coordenadas". JavaScript ejecuta: window.javaController.guardarCoordenadasDesdeMapa(json)
+     * 
+     * @param coordenadasJson String JSON con las coordenadas del polígono
+     *                        Formato: "[[lat1, lng1], [lat2, lng2], ...]"
+     * 
+     * IMPORTANTE: Este método solo guarda las coordenadas en memoria (variable coordenadasPoligono).
+     * Para guardarlas en la base de datos, el usuario debe hacer clic en "Guardar" del formulario.
+     */
     public void guardarCoordenadasDesdeMapa(String coordenadasJson) {
         this.coordenadasPoligono = coordenadasJson != null ? coordenadasJson : "";
         mostrarAlerta(Alert.AlertType.INFORMATION, "Coordenadas guardadas",
@@ -363,11 +399,25 @@ public class DialogoFincaController {
         return fincaResultado;
     }
     
+    /**
+     * Lee un archivo de recursos (HTML, CSS, JS) y lo devuelve como String.
+     * 
+     * ¿Por qué leer el HTML como String en lugar de cargarlo directamente?
+     * - Permite modificar el contenido antes de cargarlo (inyectar CSS/JS si es necesario)
+     * - Más control sobre el proceso de carga
+     * - Útil para debugging (puedes ver el HTML completo antes de cargarlo)
+     * 
+     * @param ruta Ruta del recurso dentro de src/main/resources (ej: "/mapa/mapa.html")
+     * @return El contenido completo del archivo como String
+     * @throws Exception Si el archivo no existe o no se puede leer
+     */
     private String leerRecursoComoString(String ruta) throws Exception {
+        // getResourceAsStream busca el archivo en src/main/resources
         try (InputStream is = getClass().getResourceAsStream(ruta)) {
             if (is == null) {
                 throw new Exception("No se encontró el recurso: " + ruta);
             }
+            // Leer el archivo línea por línea y unirlo con saltos de línea
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(is, StandardCharsets.UTF_8))) {
                 return reader.lines().collect(Collectors.joining("\n"));

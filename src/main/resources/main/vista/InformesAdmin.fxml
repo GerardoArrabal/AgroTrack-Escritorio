@@ -17,17 +17,17 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="controlador.ControladorInformesAdmin" prefWidth="1200" prefHeight="720">
     <top>
-        <ToolBar style="-fx-background-color: white; -fx-padding: 15 25;">
+        <ToolBar style="-fx-background-color: #0d4528; -fx-padding: 15 25;">
             <items>
-                <Label text="Informes de Administración" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #103a24;" />
-                <HBox spacing="15" alignment="CENTER_LEFT">
+                <Label text="Informes de Administración" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;" />
+                <HBox spacing="15" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
                     <children>
-                        <Label text="Tipo de informe:" />
-                        <RadioButton text="Informe de Usuarios" fx:id="radioUsuarios" selected="true" />
-                        <RadioButton text="Informe de Fincas" fx:id="radioFincas" />
-                        <Button text="Generar informe" fx:id="btnGenerarInforme" style="-fx-background-color: #0d4528; -fx-text-fill: white;" onAction="#generarInforme" />
+                        <Label text="Tipo de informe:" style="-fx-text-fill: white;" />
+                        <RadioButton text="Informe de Usuarios" fx:id="radioUsuarios" selected="true" style="-fx-text-fill: white;" />
+                        <RadioButton text="Informe de Fincas" fx:id="radioFincas" style="-fx-text-fill: white;" />
+                        <Button text="Generar informe" fx:id="btnGenerarInforme" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: white; -fx-border-width: 2px; -fx-border-radius: 5px; -fx-background-radius: 5px;" onAction="#generarInforme" />
                         <Button text="Descargar PDF" fx:id="btnDescargarPDF" style="-fx-background-color: #c62828; -fx-text-fill: white;" onAction="#descargarPDF" />
-                        <Button fx:id="btnVolver" onAction="#volver">
+                        <Button fx:id="btnVolver" style="-fx-background-color: transparent; -fx-text-fill: white;" onAction="#volver">
                             <graphic>
                                 <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                     <image>
@@ -38,6 +38,13 @@
                             <text>Volver</text>
                         </Button>
                     </children>
+                </HBox>
+                <HBox alignment="CENTER_RIGHT">
+                    <ImageView fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                            <Image url="@../../images/icono.png" />
+                        </image>
+                    </ImageView>
                 </HBox>
             </items>
         </ToolBar>

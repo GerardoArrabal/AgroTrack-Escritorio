@@ -74,8 +74,35 @@
     </div>
 
     <script>
-        let map = null;
+        /**
+         * MAPA INTERACTIVO CON LEAFLET.JS
+         * 
+         * Este archivo implementa un mapa interactivo usando la librería Leaflet.js
+         * que permite:
+         * 1. Visualizar mapas reales de OpenStreetMap
+         * 2. Dibujar polígonos haciendo clic en el mapa (para delimitar fincas)
+         * 3. Arrastrar marcadores para ajustar los puntos del polígono
+         * 4. Comunicarse con Java (la aplicación de escritorio) para guardar coordenadas
+         * 
+         * ¿Cómo funciona la comunicación Java <-> JavaScript?
+         * - Java carga este HTML en un WebView (navegador embebido)
+         * - Java puede llamar funciones JavaScript usando: webEngine.executeScript()
+         * - JavaScript puede llamar métodos Java usando: window.javaController.metodo()
+         * - Las coordenadas se pasan como JSON (texto) entre ambos
+         */
         
+        let map = null;  // Variable global que guarda la instancia del mapa de Leaflet
+        
+        /**
+         * Inicializa el mapa de Leaflet.
+         * 
+         * IMPORTANTE: Esta función tiene mucha lógica de "reintentos" porque:
+         * - Leaflet.js se carga de forma asíncrona (puede tardar)
+         * - El WebView de JavaFX puede no estar listo inmediatamente
+         * - Si intentas crear el mapa antes de que Leaflet esté cargado, falla
+         * 
+         * Por eso hay verificaciones y setTimeout() para esperar a que todo esté listo.
+         */
         function inicializarMapa() {
             console.log('inicializarMapa() llamado');
             console.log('map existe:', map !== null);
@@ -150,7 +177,14 @@
             }
         }
         
-        // Función para que Java llame
+        /**
+         * FUNCIONES DE COMUNICACIÓN CON JAVA
+         * 
+         * Estas funciones están en window.* para que Java pueda llamarlas
+         * desde el código Java usando: webEngine.executeScript("inicializarMapaDesdeJava()")
+         */
+        
+        // Función para que Java llame cuando quiera inicializar el mapa manualmente
         window.inicializarMapaDesdeJava = function() {
             console.log('Llamada desde Java para inicializar mapa');
             inicializarMapa();
@@ -183,9 +217,18 @@
             setTimeout(esperarLeaflet, 800);
         }
 
+        /**
+         * VARIABLES DE ESTADO DEL DIBUJO
+         * 
+         * - dibujando: true cuando el usuario está en modo "dibujar polígono"
+         * - poligono: objeto de Leaflet que representa el polígono dibujado
+         * - puntos: array de coordenadas [lat, lng] que forman el polígono
+         * - modoInsercion: true cuando se pueden insertar puntos en un polígono existente
+         * - marcadores: array de marcadores arrastrables en cada punto del polígono
+         */
         let dibujando = false;
         let poligono = null;
-        let puntos = [];
+        let puntos = [];  // Formato: [[lat1, lng1], [lat2, lng2], ...]
         let modoInsercion = false;
         let marcadores = [];
 
@@ -226,8 +269,19 @@
             }
         }
 
+        /**
+         * Carga coordenadas desde Java (cuando se edita una finca existente).
+         * 
+         * Java llama a esta función pasando las coordenadas como JSON string.
+         * Ejemplo: cargarCoordenadasDesdeJava('[[40.4168, -3.7038], [40.4170, -3.7040]]')
+         * 
+         * Esta función se usa cuando:
+         * - El usuario está editando una finca que ya tiene coordenadas guardadas
+         * - Se quiere mostrar el polígono de la finca en el mapa
+         */
         window.cargarCoordenadasDesdeJava = function(coordenadas) {
             if (!map) {
+                // Si el mapa no está listo, esperar un poco e intentar de nuevo
                 inicializarMapa();
                 setTimeout(function() {
                     cargarCoordenadas(coordenadas);
@@ -297,16 +351,32 @@
                 }
             });
 
+            /**
+             * BOTÓN GUARDAR: Comunica las coordenadas a Java
+             * 
+             * Cuando el usuario hace clic en "Guardar coordenadas":
+             * 1. Convierte el array de puntos a JSON (texto)
+             * 2. Llama al método Java guardarCoordenadasDesdeMapa()
+             * 3. Java recibe el JSON y lo guarda en la base de datos
+             * 
+             * Ejemplo de JSON generado:
+             * "[[40.4168, -3.7038], [40.4170, -3.7040], [40.4165, -3.7045]]"
+             */
             btnGuardar.addEventListener('click', function() {
                 if (puntos.length < 3) {
                     alert('El poligono debe tener al menos 3 puntos');
                     return;
                 }
+                // Convertir array de JavaScript a JSON string
                 const coordenadasJson = JSON.stringify(puntos);
+                
+                // Llamar al método Java (si está disponible)
+                // window.javaController es el objeto Java que se expone desde DialogoFincaController
                 if (window.javaController && window.javaController.guardarCoordenadasDesdeMapa) {
                     window.javaController.guardarCoordenadasDesdeMapa(coordenadasJson);
                     info.textContent = 'Coordenadas guardadas correctamente';
                 } else {
+                    // Si Java no está disponible, solo mostrar en consola (para debug)
                     console.log('Coordenadas guardadas:', coordenadasJson);
                     info.textContent = 'Coordenadas guardadas (consola)';
                 }
@@ -359,15 +429,33 @@
             marcadores = [];
         }
 
+        /**
+         * Agrega un marcador arrastrable en una coordenada.
+         * 
+         * ¿Qué hace un marcador arrastrable?
+         * - Permite al usuario arrastrar el punto con el mouse
+         * - Cuando sueltas el mouse (dragend), actualiza la coordenada en el array
+         * - Redibuja el polígono automáticamente para reflejar el cambio
+         * 
+         * Esto es útil para ajustar finamente los límites de la finca.
+         */
         function agregarMarcador(latlng, idx) {
+            // Crear marcador arrastrable en la posición especificada
             const marker = L.marker(latlng, { draggable: true }).addTo(map)
-                .bindPopup(`Punto ${idx + 1}`);
+                .bindPopup(`Punto ${idx + 1}`);  // Muestra "Punto 1", "Punto 2", etc. al hacer clic
+            
+            // Guardar el índice del punto en el marcador (para saber qué punto actualizar)
             marker.puntoIndex = idx;
+            
+            // Cuando el usuario termina de arrastrar el marcador
             marker.on('dragend', function(evento) {
-                const posicion = evento.target.getLatLng();
+                const posicion = evento.target.getLatLng();  // Nueva posición del marcador
                 if (puntos[marker.puntoIndex]) {
+                    // Actualizar la coordenada en el array de puntos
                     puntos[marker.puntoIndex] = [posicion.lat, posicion.lng];
+                    // Redibujar el polígono con la nueva forma
                     dibujarPoligono();
+                    // Recrear todos los marcadores (por si cambió el orden)
                     redibujarMarcadores();
                 }
             });
@@ -396,19 +484,38 @@
             map.fitBounds(poligono.getBounds());
         }
 
+        /**
+         * INSERCIÓN DE PUNTOS EN POLÍGONOS EXISTENTES
+         * 
+         * Cuando el usuario tiene un polígono ya dibujado y quiere añadir más puntos,
+         * estas funciones calculan dónde insertar el nuevo punto (en qué segmento del polígono).
+         * 
+         * Algoritmo:
+         * 1. Encuentra el segmento (línea entre dos puntos) más cercano al nuevo punto
+         * 2. Inserta el nuevo punto justo después del primer punto de ese segmento
+         * 3. Redibuja el polígono con el nuevo punto incluido
+         */
         function insertarPuntoEnPoligono(nuevo) {
+            // Encontrar entre qué dos puntos existentes insertar el nuevo punto
             const indice = encontrarSegmentoMasCercano(nuevo);
+            // Insertar el nuevo punto en el array (después del punto en la posición 'indice')
             puntos.splice(indice + 1, 0, nuevo);
             dibujarPoligono();
             redibujarMarcadores();
         }
 
+        /**
+         * Encuentra el segmento (línea entre dos puntos consecutivos) más cercano a un punto dado.
+         * 
+         * Recorre todos los segmentos del polígono y calcula la distancia del nuevo punto
+         * a cada segmento. Devuelve el índice del primer punto del segmento más cercano.
+         */
         function encontrarSegmentoMasCercano(punto) {
             let menorDistancia = Infinity;
             let mejorIndice = 0;
             for (let i = 0; i < puntos.length; i++) {
-                const a = puntos[i];
-                const b = puntos[(i + 1) % puntos.length];
+                const a = puntos[i];  // Punto inicial del segmento
+                const b = puntos[(i + 1) % puntos.length];  // Punto final (usa % para cerrar el polígono)
                 const distancia = distanciaPuntoASegmento(punto, a, b);
                 if (distancia < menorDistancia) {
                     menorDistancia = distancia;
@@ -418,23 +525,35 @@
             return mejorIndice;
         }
 
+        /**
+         * Calcula la distancia de un punto a un segmento de línea.
+         * 
+         * Esto es geometría: calcula la distancia perpendicular del punto a la línea.
+         * Si el punto está "fuera" del segmento, calcula la distancia al punto más cercano.
+         * 
+         * Usa proyección vectorial para encontrar el punto más cercano en el segmento.
+         */
         function distanciaPuntoASegmento(p, a, b) {
-            const px = p[0], py = p[1];
-            const ax = a[0], ay = a[1];
-            const bx = b[0], by = b[1];
+            const px = p[0], py = p[1];  // Coordenadas del punto nuevo
+            const ax = a[0], ay = a[1];  // Inicio del segmento
+            const bx = b[0], by = b[1];  // Fin del segmento
 
             const dx = bx - ax;
             const dy = by - ay;
 
+            // Si el segmento es un punto (a y b son iguales), distancia normal
             if (dx === 0 && dy === 0) {
                 return Math.hypot(px - ax, py - ay);
             }
 
+            // Proyección vectorial: encuentra el punto más cercano en el segmento
             let t = ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy);
+            // Asegurar que t esté entre 0 y 1 (dentro del segmento)
             t = Math.max(0, Math.min(1, t));
-            const proyX = ax + t * dx;
-            const proyY = ay + t * dy;
+            const proyX = ax + t * dx;  // Coordenada X del punto proyectado
+            const proyY = ay + t * dy;  // Coordenada Y del punto proyectado
 
+            // Distancia euclidiana del punto al punto proyectado
             return Math.hypot(px - proyX, py - proyY);
         }
 
