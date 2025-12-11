@@ -75,8 +75,13 @@ public class DialogoGestionFinancieraController {
             gestionResultado = new GestionFinanciera();
         }
         gestionResultado.setFincaId(fincaId != null ? fincaId : gestionResultado.getFincaId());
-        gestionResultado.setTipo(comboTipo.getValue());
-        gestionResultado.setConcepto(campoConcepto.getText().trim());
+        GestionFinanciera.Tipo tipo = comboTipo.getValue();
+        if (tipo == null) {
+            mostrarError("El tipo de movimiento financiero es obligatorio.");
+            return;
+        }
+        gestionResultado.setTipo(tipo);
+        gestionResultado.setConcepto(campoConcepto.getText() != null ? campoConcepto.getText().trim() : null);
         try {
             gestionResultado.setMonto(parseBigDecimal(campoMonto));
         } catch (NumberFormatException ex) {

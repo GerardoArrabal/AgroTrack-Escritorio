@@ -120,10 +120,23 @@ public class UsuarioDAO {
         try (Connection conn = ConexionBD.obtenerConexion();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             int idx = 1;
-            ps.setString(idx++, usuario.getNombre());
+            // Validar campos obligatorios
+            String nombre = usuario.getNombre();
+            if (nombre == null || nombre.trim().isEmpty()) {
+                throw new SQLException("El nombre del usuario es obligatorio");
+            }
+            ps.setString(idx++, nombre);
             ps.setString(idx++, usuario.getApellidos());
-            ps.setString(idx++, usuario.getEmail());
-            ps.setString(idx++, usuario.getUsername());
+            String email = usuario.getEmail();
+            if (email == null || email.trim().isEmpty()) {
+                throw new SQLException("El email del usuario es obligatorio");
+            }
+            ps.setString(idx++, email);
+            String username = usuario.getUsername();
+            if (username == null || username.trim().isEmpty()) {
+                throw new SQLException("El username del usuario es obligatorio");
+            }
+            ps.setString(idx++, username);
             // Validar que el rol no sea null, usar USUARIO por defecto
             Usuario.Rol rol = usuario.getRol() != null ? usuario.getRol() : Usuario.Rol.USUARIO;
             ps.setString(idx++, rol.name().toLowerCase());

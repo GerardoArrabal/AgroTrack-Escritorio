@@ -75,8 +75,17 @@ public class FincaDAO {
             + "WHERE FIN_ID=?";
         try (Connection conn = ConexionBD.obtenerConexion();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+            // Validar que el usuarioId no sea null
+            if (finca.getUsuarioId() == null) {
+                throw new SQLException("El ID del usuario propietario es obligatorio");
+            }
             ps.setInt(1, finca.getUsuarioId());
-            ps.setString(2, finca.getNombre());
+            // Validar que el nombre no sea null o vacío
+            String nombre = finca.getNombre();
+            if (nombre == null || nombre.trim().isEmpty()) {
+                throw new SQLException("El nombre de la finca es obligatorio");
+            }
+            ps.setString(2, nombre);
             ps.setString(3, finca.getUbicacion());
             ps.setBigDecimal(4, finca.getSuperficie());
             ps.setString(5, finca.getTipoSuelo());

@@ -322,9 +322,18 @@ public class DialogoFincaController {
             fincaResultado = new Finca();
         }
         Usuario propietario = comboPropietario.getValue();
+        if (propietario == null || propietario.getId() == null) {
+            mostrarError("Debes seleccionar un propietario para la finca.");
+            return;
+        }
         fincaResultado.setUsuarioId(propietario.getId());
         fincaResultado.setPropietario(propietario);
-        fincaResultado.setNombre(campoNombre.getText().trim());
+        String nombre = campoNombre.getText() != null ? campoNombre.getText().trim() : "";
+        if (nombre.isEmpty()) {
+            mostrarError("El nombre de la finca es obligatorio.");
+            return;
+        }
+        fincaResultado.setNombre(nombre);
         fincaResultado.setUbicacion(campoUbicacion.getText().trim());
         fincaResultado.setSuperficie(superficie);
         fincaResultado.setTipoSuelo(comboTipoSuelo.getValue());

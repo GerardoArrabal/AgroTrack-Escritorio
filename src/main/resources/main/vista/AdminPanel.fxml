@@ -135,7 +135,6 @@
                                     </graphic>
                                     <text>Editar</text>
                                 </Button>
-                                <Button text="Ver detalle" fx:id="btnVerDetalleFinca" onAction="#verDetalleFinca" />
                                 <Button text="Eliminar finca" fx:id="btnEliminarFinca" style="-fx-background-color: #c62828; -fx-text-fill: white;" onAction="#eliminarFinca" />
                             </children>
                         </HBox>

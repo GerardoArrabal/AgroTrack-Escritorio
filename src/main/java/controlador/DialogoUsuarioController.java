@@ -79,10 +79,25 @@ public class DialogoUsuarioController {
         if (usuarioResultado == null) {
             usuarioResultado = new Usuario();
         }
-        usuarioResultado.setNombre(campoNombre.getText().trim());
-        usuarioResultado.setApellidos(campoApellidos.getText().trim());
-        usuarioResultado.setEmail(campoCorreo.getText().trim());
-        usuarioResultado.setUsername(campoUsername.getText().trim());
+        String nombre = campoNombre.getText() != null ? campoNombre.getText().trim() : "";
+        if (nombre.isEmpty()) {
+            mostrarError("El nombre del usuario es obligatorio.");
+            return;
+        }
+        usuarioResultado.setNombre(nombre);
+        usuarioResultado.setApellidos(campoApellidos.getText() != null ? campoApellidos.getText().trim() : null);
+        String email = campoCorreo.getText() != null ? campoCorreo.getText().trim() : "";
+        if (email.isEmpty()) {
+            mostrarError("El email del usuario es obligatorio.");
+            return;
+        }
+        usuarioResultado.setEmail(email);
+        String username = campoUsername.getText() != null ? campoUsername.getText().trim() : "";
+        if (username.isEmpty()) {
+            mostrarError("El username del usuario es obligatorio.");
+            return;
+        }
+        usuarioResultado.setUsername(username);
         // Asegurar que el rol no sea null, usar USUARIO por defecto
         Usuario.Rol rol = comboRol.getValue() != null ? comboRol.getValue() : Usuario.Rol.USUARIO;
         usuarioResultado.setRol(rol);

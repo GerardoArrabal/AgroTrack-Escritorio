@@ -70,6 +70,10 @@ public class TratamientoDAO {
         ps.setInt(1, tratamiento.getCultivoId());
         ps.setDate(2, toSqlDate(tratamiento.getFecha()));
         ps.setString(3, tratamiento.getProducto());
+        // Validar que el tipo no sea null
+        if (tratamiento.getTipo() == null) {
+            throw new SQLException("El tipo de tratamiento es obligatorio");
+        }
         ps.setString(4, tratamiento.getTipo().name().toLowerCase());
         ps.setString(5, tratamiento.getDosis());
         ps.setBigDecimal(6, tratamiento.getPrecioTratamiento());

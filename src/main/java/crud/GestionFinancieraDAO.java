@@ -110,6 +110,10 @@ public class GestionFinancieraDAO {
 
     private void setParametros(PreparedStatement ps, GestionFinanciera gestion) throws SQLException {
         ps.setInt(1, gestion.getFincaId());
+        // Validar que el tipo no sea null
+        if (gestion.getTipo() == null) {
+            throw new SQLException("El tipo de movimiento financiero es obligatorio");
+        }
         ps.setString(2, gestion.getTipo().name().toLowerCase());
         ps.setString(3, gestion.getConcepto());
         ps.setBigDecimal(4, gestion.getMonto());

@@ -196,8 +196,25 @@ public class ControladorAdmin {
         }
         Optional<UsuarioFormResult> resultado = mostrarDialogoUsuario(seleccionado);
         resultado.ifPresent(data -> {
+            // Validar campos obligatorios antes de actualizar
+            Usuario usuario = data.usuario();
+            if (usuario.getNombre() == null || usuario.getNombre().trim().isEmpty()) {
+                mostrarAlerta(Alert.AlertType.ERROR, "Error de validación",
+                    "El nombre del usuario es obligatorio.");
+                return;
+            }
+            if (usuario.getEmail() == null || usuario.getEmail().trim().isEmpty()) {
+                mostrarAlerta(Alert.AlertType.ERROR, "Error de validación",
+                    "El email del usuario es obligatorio.");
+                return;
+            }
+            if (usuario.getUsername() == null || usuario.getUsername().trim().isEmpty()) {
+                mostrarAlerta(Alert.AlertType.ERROR, "Error de validación",
+                    "El username del usuario es obligatorio.");
+                return;
+            }
             try {
-                usuarioDAO.actualizar(data.usuario(), data.passwordPlano());
+                usuarioDAO.actualizar(usuario, data.passwordPlano());
                 refrescarUsuarios();
             } catch (SQLException e) {
                 mostrarAlerta(Alert.AlertType.ERROR, "Error al actualizar",
@@ -236,6 +253,8 @@ public class ControladorAdmin {
         try {
             usuarioDAO.eliminar(seleccionado.getId());
             refrescarUsuarios();
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Usuario eliminado",
+                "El usuario se ha eliminado correctamente.");
         } catch (SQLException e) {
             mostrarAlerta(Alert.AlertType.ERROR, "Error al eliminar",
                 "No se pudo eliminar el usuario.\nDetalle: " + e.getMessage());
@@ -274,16 +293,6 @@ public class ControladorAdmin {
     }
 
     @FXML
-    private void verDetalleFinca(ActionEvent event) {
-        Finca seleccionada = tablaFincas.getSelectionModel().getSelectedItem();
-        if (seleccionada == null) {
-            mostrarAlerta(Alert.AlertType.WARNING, "Sin selección", "Selecciona una finca.");
-            return;
-        }
-        abrirDetalleFinca(seleccionada, true);
-    }
-
-    @FXML
     private void eliminarFinca(ActionEvent event) {
         Finca seleccionada = tablaFincas.getSelectionModel().getSelectedItem();
         if (seleccionada == null) {
@@ -293,6 +302,8 @@ public class ControladorAdmin {
         try {
             fincaDAO.eliminar(seleccionada.getId());
             refrescarFincas();
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Finca eliminada",
+                "La finca se ha eliminado correctamente.");
         } catch (SQLException e) {
             mostrarAlerta(Alert.AlertType.ERROR, "Error al eliminar finca",
                 "No se pudo eliminar la finca seleccionada.\nDetalle: " + e.getMessage());

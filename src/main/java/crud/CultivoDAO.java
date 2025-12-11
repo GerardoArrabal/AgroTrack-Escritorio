@@ -71,7 +71,12 @@ public class CultivoDAO {
 
     private void setParametros(PreparedStatement ps, Cultivo cultivo) throws SQLException {
         ps.setInt(1, cultivo.getFincaId());
-        ps.setString(2, cultivo.getNombre());
+        // Validar que el nombre no sea null o vacío
+        String nombre = cultivo.getNombre();
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new SQLException("El nombre del cultivo es obligatorio");
+        }
+        ps.setString(2, nombre);
         ps.setString(3, cultivo.getVariedad());
         ps.setDate(4, toSqlDate(cultivo.getFechaSiembra()));
         ps.setDate(5, toSqlDate(cultivo.getFechaCosecha()));

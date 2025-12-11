@@ -114,6 +114,7 @@
         let centerLon = -3.7038;
         let zoom = 6;
         let dibujando = false;
+        let modoEdicion = false; // Controla si los marcadores pueden moverse
         let puntos = [];
         let poligono = null;
         let tilesCache = {};
@@ -381,8 +382,8 @@
             
             // Verificar si se clickeó sobre un marcador
             const marcadorIdx = obtenerMarcadorEnPosicion(mouseX, mouseY);
-            if (marcadorIdx >= 0 && !dibujando) {
-                // Arrastrar marcador
+            if (marcadorIdx >= 0 && !dibujando && modoEdicion) {
+                // Arrastrar marcador solo si el modo edición está activo
                 e.preventDefault(); // Prevenir comportamiento por defecto
                 arrastrandoMarcador = true;
                 marcadorSeleccionado = marcadorIdx;
@@ -457,9 +458,9 @@
                 
                 dibujarMapa();
             } else if (!dibujando && !arrastrandoMarcador) {
-                // Cambiar cursor si está sobre un marcador
+                // Cambiar cursor si está sobre un marcador (solo si modo edición está activo)
                 const marcadorIdx = obtenerMarcadorEnPosicion(mouseX, mouseY);
-                if (marcadorIdx >= 0) {
+                if (marcadorIdx >= 0 && modoEdicion) {
                     canvas.style.cursor = 'move';
                 } else {
                     canvas.style.cursor = 'grab';
@@ -739,6 +740,21 @@
         
         window.inicializarMapaDesdeJava = function() {
             ajustarCanvas();
+        };
+        
+        // Función para activar/desactivar el modo edición de marcadores
+        window.activarModoEdicion = function(activar) {
+            modoEdicion = activar === true;
+            if (modoEdicion) {
+                info.textContent = 'Modo edición activado: Puedes mover los puntos del polígono';
+                canvas.style.cursor = 'grab';
+            } else {
+                info.textContent = 'Modo edición desactivado: Los puntos no se pueden mover';
+                canvas.style.cursor = 'grab';
+                // Asegurar que no se esté arrastrando ningún marcador
+                arrastrandoMarcador = false;
+                marcadorSeleccionado = -1;
+            }
         };
         
         // Inicializar

@@ -86,8 +86,13 @@ public class DialogoCultivoController {
             cultivoResultado = new Cultivo();
         }
         cultivoResultado.setFincaId(finca != null ? finca.getId() : cultivoResultado.getFincaId());
-        cultivoResultado.setNombre(campoNombre.getText().trim());
-        cultivoResultado.setVariedad(campoVariedad.getText().trim());
+        String nombre = campoNombre.getText() != null ? campoNombre.getText().trim() : "";
+        if (nombre.isEmpty()) {
+            mostrarError("El nombre del cultivo es obligatorio.");
+            return;
+        }
+        cultivoResultado.setNombre(nombre);
+        cultivoResultado.setVariedad(campoVariedad.getText() != null ? campoVariedad.getText().trim() : null);
         // Asegurar que el estado no sea null, usar ACTIVO por defecto
         Cultivo.Estado estado = comboEstado.getValue() != null ? comboEstado.getValue() : Cultivo.Estado.ACTIVO;
         cultivoResultado.setEstado(estado);

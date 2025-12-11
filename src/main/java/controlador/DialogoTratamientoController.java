@@ -101,12 +101,21 @@ public class DialogoTratamientoController {
             tratamientoResultado = new Tratamiento();
         }
         Cultivo cultivoSeleccionado = comboCultivo.getValue();
+        if (cultivoSeleccionado == null) {
+            mostrarError("Debes seleccionar un cultivo.");
+            return;
+        }
         tratamientoResultado.setCultivoId(cultivoSeleccionado.getId());
         tratamientoResultado.setCultivo(cultivoSeleccionado);
         tratamientoResultado.setFecha(pickerFecha.getValue());
-        tratamientoResultado.setProducto(campoProducto.getText().trim());
-        tratamientoResultado.setTipo(comboTipo.getValue());
-        tratamientoResultado.setDosis(campoDosis.getText().trim());
+        tratamientoResultado.setProducto(campoProducto.getText() != null ? campoProducto.getText().trim() : null);
+        Tratamiento.Tipo tipo = comboTipo.getValue();
+        if (tipo == null) {
+            mostrarError("El tipo de tratamiento es obligatorio.");
+            return;
+        }
+        tratamientoResultado.setTipo(tipo);
+        tratamientoResultado.setDosis(campoDosis.getText() != null ? campoDosis.getText().trim() : null);
         try {
             tratamientoResultado.setPrecioTratamiento(parseBigDecimal(campoCosto));
         } catch (NumberFormatException ex) {

@@ -175,6 +175,7 @@ public class ControladorDetalleFinca {
     private WebView webView;
     private WebEngine webEngine;
     private boolean volverAAdmin = false;
+    private boolean modoEdicionActivo = false; // Controla si el modo edición está activo
 
     private final ObservableList<Cultivo> cultivos = FXCollections.observableArrayList();
     private final ObservableList<Tratamiento> tratamientos = FXCollections.observableArrayList();
@@ -281,8 +282,21 @@ public class ControladorDetalleFinca {
             return;
         }
         
+        // Asegurar que el modo edición esté desactivado al cargar coordenadas
+        modoEdicionActivo = false;
+        if (btnEditarPoligono != null) {
+            btnEditarPoligono.setText("Editar polígono");
+        }
+        
         String coordenadas = fincaActual.getCoordenadasPoligono();
         webEngine.executeScript("window.cargarCoordenadasDesdeJava('" + coordenadas + "');");
+        
+        // Desactivar modo edición en el mapa
+        try {
+            webEngine.executeScript("window.activarModoEdicion && window.activarModoEdicion(false);");
+        } catch (Exception e) {
+            // Ignorar si el mapa aún no está listo
+        }
     }
 
     @FXML
@@ -297,15 +311,24 @@ public class ControladorDetalleFinca {
             return;
         }
         try {
-            webEngine.executeScript("window.iniciarEdicionDesdeJava && window.iniciarEdicionDesdeJava();");
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Modo edición activado",
-                "Ya puedes dibujar o ajustar el polígono.\n" +
-                "1. Añade puntos con clic izquierdo.\n" +
-                "2. Pulsa \"Finalizar polígono\" cuando cierres el perímetro.\n" +
-                "3. Guarda las coordenadas antes de salir.");
+            // Alternar el modo edición
+            modoEdicionActivo = !modoEdicionActivo;
+            webEngine.executeScript("window.activarModoEdicion && window.activarModoEdicion(" + modoEdicionActivo + ");");
+            
+            // Actualizar el texto del botón
+            if (modoEdicionActivo) {
+                btnEditarPoligono.setText("Desactivar edición");
+                mostrarAlerta(Alert.AlertType.INFORMATION, "Modo edición activado",
+                    "Ahora puedes mover los puntos del polígono arrastrándolos con el ratón.\n" +
+                    "Recuerda guardar las coordenadas después de hacer los cambios.");
+            } else {
+                btnEditarPoligono.setText("Editar polígono");
+                mostrarAlerta(Alert.AlertType.INFORMATION, "Modo edición desactivado",
+                    "Los puntos del polígono ya no se pueden mover.");
+            }
         } catch (Exception e) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error al activar edición",
-                "No se pudo iniciar el modo de edición del mapa.\nDetalle: " + e.getMessage());
+            mostrarAlerta(Alert.AlertType.ERROR, "Error al cambiar modo edición",
+                "No se pudo cambiar el modo de edición del mapa.\nDetalle: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -329,6 +352,11 @@ public class ControladorDetalleFinca {
 
     public void setFinca(Finca finca) {
         this.fincaActual = finca;
+        // Desactivar modo edición al cambiar de finca
+        modoEdicionActivo = false;
+        if (btnEditarPoligono != null) {
+            btnEditarPoligono.setText("Editar polígono");
+        }
         if (finca == null) {
             mostrarAlerta(Alert.AlertType.INFORMATION, "Detalle de finca",
                 "No se ha proporcionado una finca para mostrar.");
@@ -632,6 +660,17 @@ public class ControladorDetalleFinca {
             return;
         }
         mostrarDialogoFinca(fincaActual).ifPresent(fincaEditada -> {
+            // Validar campos obligatorios antes de actualizar
+            if (fincaEditada.getUsuarioId() == null) {
+                mostrarAlerta(Alert.AlertType.ERROR, "Error de validación",
+                    "El usuario propietario de la finca es obligatorio.");
+                return;
+            }
+            if (fincaEditada.getNombre() == null || fincaEditada.getNombre().trim().isEmpty()) {
+                mostrarAlerta(Alert.AlertType.ERROR, "Error de validación",
+                    "El nombre de la finca es obligatorio.");
+                return;
+            }
             try {
                 fincaDAO.actualizar(fincaEditada);
                 setFinca(fincaEditada);
@@ -689,6 +728,12 @@ public class ControladorDetalleFinca {
         }
         Optional<Cultivo> resultado = mostrarDialogoCultivo(seleccionado);
         resultado.ifPresent(cultivo -> {
+            // Validar campos obligatorios antes de actualizar
+            if (cultivo.getNombre() == null || cultivo.getNombre().trim().isEmpty()) {
+                mostrarAlerta(Alert.AlertType.ERROR, "Error de validación",
+                    "El nombre del cultivo es obligatorio.");
+                return;
+            }
             try {
                 cultivoDAO.actualizar(cultivo);
                 cargarCultivos();
@@ -777,6 +822,12 @@ public class ControladorDetalleFinca {
             : tablaCultivos.getSelectionModel().getSelectedItem();
         Optional<Tratamiento> resultado = mostrarDialogoTratamiento(seleccionado, cultivoBase);
         resultado.ifPresent(tratamiento -> {
+            // Validar campos obligatorios antes de actualizar
+            if (tratamiento.getTipo() == null) {
+                mostrarAlerta(Alert.AlertType.ERROR, "Error de validación",
+                    "El tipo de tratamiento es obligatorio.");
+                return;
+            }
             try {
                 tratamientoDAO.actualizar(tratamiento);
                 if (tratamiento.getCultivo() != null) {
@@ -858,6 +909,12 @@ public class ControladorDetalleFinca {
         }
         Optional<GestionFinanciera> resultado = mostrarDialogoGestion(seleccionada);
         resultado.ifPresent(gestion -> {
+            // Validar campos obligatorios antes de actualizar
+            if (gestion.getTipo() == null) {
+                mostrarAlerta(Alert.AlertType.ERROR, "Error de validación",
+                    "El tipo de movimiento financiero es obligatorio.");
+                return;
+            }
             try {
                 gestionDAO.actualizar(gestion);
                 cargarFinanzas();
